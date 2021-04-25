@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-04-25 12:43:05 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-04-25 13:31:20
+ * @Last Modified time: 2021-04-25 21:22:30
  */
 
 const $ = Env('步步多')
@@ -14,7 +14,7 @@ const accessKeyArr = []
 const deviceIdArr = []
 
 // 自定义刷的次数 
-$.rushtime = 5000
+$.rushtime = 6666
 
 // 总共获得金币数量
 $.total = 0
