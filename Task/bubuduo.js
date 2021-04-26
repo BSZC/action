@@ -14,7 +14,7 @@ const accessKeyArr = []
 const deviceIdArr = []
 
 // 自定义刷的次数 
-$.rushtime = 6666
+$.rushtime = 6543
 
 // 总共获得金币数量
 $.total = 0
