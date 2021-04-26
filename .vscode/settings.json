@@ -1,5 +1,6 @@
 {
   "conventionalCommits.scopes": [
-    "步步多"
+    "步步多",
+    "vscode"
   ]
 }
