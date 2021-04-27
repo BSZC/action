@@ -10,7 +10,7 @@
 
 const $ = Env('步步宝')
 
-const notify = $.isNode() ? require('./sendNotify') : '';
+const notify = $.isNode() ? require('../../Task/sendNotify') : '';
 
 $.message = ''
 
