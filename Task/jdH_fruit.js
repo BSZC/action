@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-04-06 10:11:03
+ * @Last Modified time: 2021-05-14 20:49:59
  */
 
 const $ = Env('京东到家-免费水果')
@@ -10,6 +10,13 @@ const $ = Env('京东到家-免费水果')
 const JD_API_HOST = `https://daojia.jd.com/client?_jdrandom=${new Date().getTime()}`
 
 const Cookie = []
+
+const notify = $.isNode() ? require('./sendNotify') : '';
+
+$.message = ''
+
+// 可收获
+$.finish = false
 
 // 任务列表
 const TaskArrList = []
@@ -42,6 +49,9 @@ async function todoTask(){
   // 初始化
   console.log(`🍉执行 -> 初始化果树`)
   await initFruit()
+  if($.finish){
+    await sendMsg()
+  }
 
   // 获取任务列表
   console.log(`\n🍉执行 -> 查看任务列表`);
@@ -77,7 +87,7 @@ async function todoTask(){
   }else{
     console.log(`水滴容量为：【${$.totalWater}】g💧,不足200g,退出浇水操作！`)
   }
- 
+
 }
 
 // 初始化果树
@@ -100,6 +110,10 @@ async function initFruit() {
             console.log(`初始化果树信息···\n当前种植：【${initFruitInfo.fruitName}】,当前阶段:【${initFruitInfo.stageName}】,还差【${initFruitInfo.curStageLeftProcess}%】次升级下一阶段`)
             console.log(`初始化水壶信息···\n当前水壶剩余水滴:【${result.result.userResponse.waterBalance}g】💧`)
             $.totalWater = result.result.userResponse.waterBalance
+            if(initFruitInfo.stageName==='成熟'){
+                $.finish = true
+                $.message+=`当前种植：【${initFruitInfo.fruitName}】,当前阶段:【${initFruitInfo.stageName}】,还差【${initFruitInfo.curStageLeftProcess}%】次升级下一阶段`
+            }
           }}} catch (e) {
             console.log(e)
           } finally {
@@ -234,6 +248,9 @@ async function doDailyTaskAward(Task) {
     })
 }
 
+async function sendMsg() {
+    await notify.sendNotify(`京东到家 - 免费水果`,`${$.message}`);
+  }
 
 // URL
 function taskUrl(function_id, params = {}) {

@@ -28,3 +28,4 @@ jobs:
           node ./Task/jdH_fruit.js
         env:
           JDGH_XDZY_COOKIE: ${{ secrets.JDGH_XDZY_COOKIE }}
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
