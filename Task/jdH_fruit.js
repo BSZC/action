@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-18 11:54:59
+ * @Last Modified time: 2021-05-18 17:09:49
  */
 
 const $ = Env('京东到家-免费水果')
@@ -91,6 +91,10 @@ async function todoTask(){
   // 去收取水瓶操作
   console.log(`\n🥛执行 -> 收取水瓶`)
   await doWaterBottle()
+
+  // 去收取水车操作
+  console.log(`\n🎡执行 -> 收取水车`)
+  await doCollectWater()
 
 }
 
@@ -201,9 +205,9 @@ async function doDailyTaskAward(Task) {
 // 🥛水瓶
 async function doWaterBottle(){
     // 调用API
-    await do_Water_Bottle_API()
+    await do_water_bottle_API()
     // console.log(result)
-    // 任务是否完成
+    // 是否点击水瓶
     if(result.code!=='0'){
     // 未完成
     console.log(result.msg)
@@ -211,6 +215,22 @@ async function doWaterBottle(){
     // 任务完成
     console.log(`✅已成功收取水瓶奖励`)
   }
+}
+
+// 🎡水车
+async function doCollectWater(){
+    // 调用API
+    await do_collect_water_API()
+     // console.log(result)
+    // 是否点击水车
+    if(result.code!=='0'){
+        // 未完成
+        console.log(result.msg)
+      }else{
+        // 任务完成
+       let result = result.result
+       console.log(`当前用户水滴💧：【${result.userWaterBalance}g】\n容量限制：【${result.capacityLimit}g】💧\n总共收集到水滴💧:【${result.totalCollectWater}g】💧`);
+      }
 }
 
 
@@ -247,8 +267,13 @@ async function do_award_task_API(Task){
 }
 
 // 🥛水瓶API
-async function do_Water_Bottle_API(){
+async function do_water_bottle_API(){
     await getRequestBody(`fruit/receiveWaterBottle`,{})
+}
+
+// 🎡水车API
+async function do_collect_water_API(){
+    await getRequestBody(`fruit/collectWater`,{})
 }
 
 
