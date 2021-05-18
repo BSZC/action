@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-18 17:09:49
+ * @Last Modified time: 2021-05-18 17:17:02
  */
 
 const $ = Env('京东到家-免费水果')
@@ -228,8 +228,7 @@ async function doCollectWater(){
         console.log(result.msg)
       }else{
         // 任务完成
-       let result = result.result
-       console.log(`当前用户水滴💧：【${result.userWaterBalance}g】\n容量限制：【${result.capacityLimit}g】💧\n总共收集到水滴💧:【${result.totalCollectWater}g】💧`);
+       console.log(`当前用户水滴💧：【${result.result.userWaterBalance}g】\n容量限制：【${result.result.capacityLimit}g】💧\n总共收集到水滴💧:【${result.result.totalCollectWater}g】💧`)
       }
 }
 
