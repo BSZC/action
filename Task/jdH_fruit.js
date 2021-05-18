@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-18 02:25:25
+ * @Last Modified time: 2021-05-18 11:54:59
  */
 
 const $ = Env('京东到家-免费水果')
@@ -54,7 +54,7 @@ async function todoTask(){
   }
 
   // 获取任务列表
-  console.log(`\n🍉执行 -> 查看任务列表`);
+  console.log(`\n🍉执行 -> 查看任务列表`)
   await getTaskList()
 
   // 去完成任务
@@ -66,7 +66,7 @@ async function todoTask(){
   }
 
   // 任务领取奖励
-  console.log(`\n🍉执行 -> 领取奖励`);
+  console.log(`\n🍉执行 -> 领取奖励`)
   for (let i = 0; i < TaskArrList.length; i++) {
     Task = TaskArrList[i]
     await doDailyTaskAward(Task)
@@ -74,7 +74,7 @@ async function todoTask(){
   }
 
   // 浇水
-  console.log(`\n🍉执行 -> 浇水`);
+  console.log(`\n🍉执行 -> 浇水`)
   if($.totalWater>200){
     for(let i = 0;i<($.totalWater/10);i++){
       if($.totalWater<100){
@@ -87,8 +87,14 @@ async function todoTask(){
   }else{
     console.log(`水滴容量为：【${$.totalWater}】g💧,不足200g,退出浇水操作！`)
   }
-  
+
+  // 去收取水瓶操作
+  console.log(`\n🥛执行 -> 收取水瓶`)
+  await doWaterBottle()
+
 }
+
+
 
 
 // ==================功能模块==================
@@ -134,11 +140,12 @@ async function getTaskList(){
         'taskId':`${item.taskId}`,
         'taskType':`${item.taskType}`,
         'plateCode':1,
-        'subNode':null
+        // 'subNode':null
       }
       // 去完成内容 推到数组内
       TaskArrList.push(taskInfo)
     })
+    // console.log(TaskArrList)
   }
 }
 
@@ -191,6 +198,21 @@ async function doDailyTaskAward(Task) {
   }
 }
 
+// 🥛水瓶
+async function doWaterBottle(){
+    // 调用API
+    await do_Water_Bottle_API()
+    // console.log(result)
+    // 任务是否完成
+    if(result.code!=='0'){
+    // 未完成
+    console.log(result.msg)
+  }else{
+    // 任务完成
+    console.log(`✅已成功收取水瓶奖励`)
+  }
+}
+
 
 // 🗨发送信息
 async function sendMsg() {
@@ -222,6 +244,11 @@ async function do_finish_task_API(Task) {
 // 📕领取奖励API
 async function do_award_task_API(Task){
   await getRequestBody(`task/sendPrize`, Task)
+}
+
+// 🥛水瓶API
+async function do_Water_Bottle_API(){
+    await getRequestBody(`fruit/receiveWaterBottle`,{})
 }
 
 
