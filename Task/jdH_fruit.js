@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-18 17:17:02
+ * @Last Modified time: 2021-05-18 17:19:07
  */
 
 const $ = Env('京东到家-免费水果')
@@ -210,7 +210,7 @@ async function doWaterBottle(){
     // 是否点击水瓶
     if(result.code!=='0'){
     // 未完成
-    console.log(result.msg)
+    console.log(`${result.msg},用户今天已经领取过水瓶奖励···`)
   }else{
     // 任务完成
     console.log(`✅已成功收取水瓶奖励`)
