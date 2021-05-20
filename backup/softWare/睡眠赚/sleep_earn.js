@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-31 15:53:53 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-04-13 18:20:43
+ * @Last Modified time: 2021-05-20 19:54:24
  */
 
 const $ = Env('睡眠赚')
@@ -17,7 +17,7 @@ const sportList = [
   `Riding`
 ]
 
-const notify = $.isNode() ? require('./sendNotify') : '';
+const notify = $.isNode() ? require('../../../Task/sendNotify') : '';
 
 const SLEEP_API_HOST = 'http://sleep.zouluzhuan.com'
 
