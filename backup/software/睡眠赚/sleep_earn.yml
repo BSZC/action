@@ -1,0 +1,31 @@
+name: 睡眠赚
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 * * * *'
+  watch:
+    types: started
+  repository_dispatch:
+    types: sleep_earn
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: npm install
+        run: |
+          npm install
+      - name: '运行 【睡眠赚】'
+        run: |
+          node ./Task/sleep_earn.js
+        env:
+          SLEEP_EARN_UID: ${{ secrets.SLEEP_EARN_UID }}
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
