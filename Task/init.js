@@ -1,11 +1,13 @@
 
 const $ = Env('xxx')
 
-const notify = $.isNode() ? require('./sendNotify') : '';
+const CookiesArr = [``]
+
+const XXXX_API_HOST = ''
 
 $.message = ''
 
-const XXXX_API_HOST = ''
+const notify = $.isNode() ? require('./sendNotify') : '';
 
 // if ($.isNode()) {
   // if (process.env.XXXX_XXXXX && process.env.XXXX_XXXXX.indexOf('#') > -1) {
