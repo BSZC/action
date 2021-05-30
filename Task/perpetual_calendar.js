@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 00:10:27
+ * @Last Modified time: 2021-05-31 00:24:34
  */
 
 const $ = Env('万年历')
@@ -16,7 +16,7 @@ $.message = ''
 const notify = $.isNode() ? require('./sendNotify') : '';
 
 // 任务集合
-const missionArr = []
+const missionArr = ['signin']
 
 $.total = 0
 
@@ -43,9 +43,9 @@ if ($.isNode()) {
 
     console.log(`········【帐号${i+1}】开始········`)
 
-    // 日常签到
-    console.log(`执行 -> 日常签到`);
-    await daily_sign()
+    // 红包签到
+    console.log(`执行 -> 红包签到`);
+    await hb_sign()
 
     // 任务列表
     console.log(`执行 -> 任务列表`);
@@ -57,6 +57,7 @@ if ($.isNode()) {
       console.log(`开始第${i+1}次循环，去完成任务···`);
       for (let i = 0; i < missionArr.length; i++){
         mission = missionArr[i]
+        console.log(`当前执行任务:${mission}`);
         await finish_task(mission)
         await $.wait(10000) // 避免 重复操作 10s
       }
@@ -77,10 +78,10 @@ if ($.isNode()) {
 
 
 // ==================功能模块==================
-// 日常签到
-async function daily_sign() {
-  // 日常签到API
-  await daily_sign_API()
+// 红包签到
+async function hb_sign() {
+  // 红包签到API
+  await hb_sign_API()
   // console.log(result);
   if(result.status!==200){
     console.log(`❌ ${result.msg}`)
@@ -136,8 +137,8 @@ async function sendMsg() {
 }
 
 // ==================API==================
-// 日常签到API
-async function daily_sign_API() {
+// 红包签到API
+async function hb_sign_API() {
   await postRequest(`api/Coin_Activity/CompleteHongBao?${url}`)
 }
 
