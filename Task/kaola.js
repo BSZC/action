@@ -2,14 +2,16 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-27 13:36:57 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-28 18:33:10
+ * @Last Modified time: 2021-05-30 13:30:52
  */
 
 const $ = Env('考拉海购')
 
 const CookiesArr = []
 
-const KAOLA_API_HOST = 'https://m-bean.kaola.com'
+const KAOLA_API_HOST = 'https://m-bean.kaola.com/m/point'
+
+const KAOLA_BEAN_API_HOST = 'https://203.119.245.60/gw'
 
 $.message = ''
 
@@ -17,22 +19,26 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 
 // 任务Id集合
 const jobIdArr = []
+// 需要循环多次的任务id集合
+const circleJobIdArr = []
+// 需要循环的次数
+const circleJobTime = []
 
-// if ($.isNode()) {
-  // if (process.env.XXXX_XXXXX && process.env.XXXX_XXXXX.indexOf('#') > -1) {
-  //   xxxx = process.env.XXXX_XXXXX.split('#');
-  // }else if(process.env.XXXX_XXXXX && process.env.XXXX_XXXXX.indexOf('#') > -1) {
-  //   xxxx = process.env.XXXX_XXXXX.split('\n');
-  // }else{
-  //   xxxx = [process.env.XXXX_XXXXX]
-  // }
+if ($.isNode()) {
+  if (process.env.KAOLA_COOKIE && process.env.KAOLA_COOKIE.indexOf('#') > -1) {
+    nowCookie = process.env.KAOLA_COOKIE.split('#');
+  }else if(process.env.KAOLA_COOKIE && process.env.KAOLA_COOKIE.indexOf('#') > -1) {
+    nowCookie = process.env.KAOLA_COOKIE.split('\n');
+  }else{
+    nowCookie = [process.env.KAOLA_COOKIE]
+  }
 
-  // Object.keys(xxxx).forEach((item) => {
-  //   if (xxxx[item]) {
-  //     XXXXxxxx.push(xxxx[item])
-  //   }
-  // })
-// }
+  Object.keys(nowCookie).forEach((item) => {
+    if (nowCookie[item]) {
+      CookiesArr.push(nowCookie[item])
+    }
+  })
+}
 
 !(async () => {
   for (let i = 0; i < CookiesArr.length; i++) {
@@ -52,9 +58,24 @@ const jobIdArr = []
         jobid = jobIdArr[i]
         await task_finish(jobid)
     }
+    console.log(`\n执行 -> 完成多次循环任务`);
+    if(circleJobIdArr.length!==0){
+      for(let i = 0; i<circleJobIdArr.length;i++){
+        for(let j = 0; j<circleJobTime[i];j++){
+          jobid = circleJobIdArr[i]
+          await task_finish(jobid)
+        }
+      }
+    }
+
+    console.log(`\n执行 -> 首页领取奖励`);
+    await get_credit_pay()
+
+    console.log(`\n执行 -> 即将过期的考拉豆🥔`);
+    await expire_beans()
     
     // 推送消息
-    // await sendMsg()
+    await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
 
@@ -69,7 +90,6 @@ const jobIdArr = []
 async function daily_sign() {
   // 调用API
   await daily_sign_API()
-  console.log( );
   let result = JSON.parse($.daily_sign_API_Result)
   if(result.code!==200){
       // 重复签到
@@ -90,9 +110,15 @@ async function task_list(){
     }else{
         let taskList = result.data.allJobList
         taskList.forEach((item) => {
+          // 具体每个任务
+            console.log(`${item.text}=>[${item.title} ${item.completeNum}/${item.missionNum}],每次可获得${item.pointNum}个考拉豆🥔`);
+            if(item.missionNum>1){
+              circleJobIdArr.push(item.jobId)
+              circleJobTime.push(item.missionNum-item.completeNum)
+            }else{
             // console.log(item);
             jobIdArr.push(item.jobId)
-            console.log(`${item.text}=>[${item.title} ${item.completeNum}/${item.missionNum}],每次可获得${item.pointNum}个考拉豆🥔`);
+            }
         })
     }
 }
@@ -110,34 +136,66 @@ async function task_finish(id){
     }
 }
 
+// 首页领取奖励
+async function get_credit_pay(){
+  // 调用API
+  await get_credit_pay_API()
+  let result = JSON.parse($.get_credit_pay_API_Result)
+  if(result.code!==200){
+    console.log(`❌ ${result.desc}`);
+  }else{
+    console.log(result.data);
+  }
+}
+
+// 即将过期的考拉豆
+async function expire_beans(){
+  // 调用‍API
+  await expire_beans_API()
+  let result = JSON.parse($.expire_beans_API_Result)
+  // console.log(result);
+  if(result.code!==0){
+    console.log(`❌ ${result.msg}`);
+  }else{
+    $.message+=`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个海拉豆🥔\n${result.body[0].desc}`
+    console.log(`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个海拉豆🥔\n${result.body[0].desc}`);
+  }
+}
+
 
 // 推送消息
-// async function sendMsg() {
-//   await notify.sendNotify(`xxxx`,`${$.message}`);
-// }
+async function sendMsg() {
+  await notify.sendNotify(`考拉海购`,`${$.message}`);
+}
 
 // ==================API==================
-// API
-async function xxx_API() {
-  await postRequest(``)
-}
 
 // 日常签到API
 async function daily_sign_API() {
   let body = `{"deviceId": ""}`
-  $.daily_sign_API_Result = await postRequestBody(`m/point/sign.html`,body)
+  $.daily_sign_API_Result = await postRequestBody(`sign.html`,body)
 }
 
 // 任务列表API
 async function task_list_API() {
-    await getRequest(`m/point/getCreditsJobList.html`)
+    await getRequest(`getCreditsJobList.html`)
 }
 
 // 任务完成API
 async function task_finish_API(id) {
-    await getRequest(`m/point/creditjob/getpay.html?jobId=${id}`)
+    await getRequest(`creditjob/getpay.html?jobId=${id}`)
 }
 
+// 首页领取奖励API
+async function get_credit_pay_API(){
+  let body = `{"type":1}`
+  $.get_credit_pay_API_Result = await postRequestBody(`getCreditsPay`)
+}
+
+// 即将过期考拉豆API
+async function expire_beans_API(){
+  $.expire_beans_API_Result = await expirePostRequest(`credits/expire/detail`)
+}
 
 
 // ==================请求==================
@@ -173,20 +231,18 @@ function taskUrl(url) {
         'Cookie':cookie,
         'Host': 'm-bean.kaola.com',
         'Origin': 'https://m-bean.kaola.com',
-        'Referer': 'https://m-bean.kaola.com/app/index?_noheader=true&_toggleTitle=true&_fullscreen=true&_wk=true&kpm=cGVyc29uYWxQYWdl._._._%40%40_%40%40_&spm=a215sy.page_kla_personalpage.myservice.1&scm=20140734.mt_15947783.252361.dt_1-buid_&1-res_363675-s_20083755-cts_1622087724592-f_14129901-g_152-pi_251-fa_520350-isResource_1-url_aHR0cHM6Ly9tLWJlYW4ua2FvbGEuY29tL2FwcC9pbmRleD9fbm9oZWFkZXI9dHJ1ZSZfdG9nZ2xlVGl0bGU9dHJ1ZSZfZnVsbHNjcmVlbj10cnVlJl93az10cnVl-ml_15826917&klwv=true&platform=2&version=45000&apiVersion=208&appChannel=1&width=1170&network=wifi&appVersion=4.50.0&deviceUdID=YKAMNC1wUwYDAH1KoXmtXJp1&deviceUdidToken=1075706897C03A0BBDAC213D3E4D316B5258B353747D412D6470E15CFCB15AB3',
+        'Referer': 'https://m-bean.kaola.com/app/index',
     }
   }
 }
 
-// 带Body的请求 增加代码的复用率
-// RequestBody
 function postRequestBody(url, body = {}, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
       $.post(BodytaskUrl(url, body), (err, resp, data) => {
         try {
           if (err) {
-              console.log(err);
+            console.log(err);
             console.log('\nAPI查询请求失败 ‼️‼️')
           } else {
             result = JSON.parse(data);
@@ -209,7 +265,42 @@ function postRequestBody(url, body = {}, timeout = 1000){
         'Cookie':cookie,
         'Host': 'm-bean.kaola.com',
         'Origin': 'https://m-bean.kaola.com',
-        'Referer': 'https://m-bean.kaola.com/app/index?_noheader=true&_toggleTitle=true&_fullscreen=true&_wk=true&kpm=cGVyc29uYWxQYWdl._._._%40%40_%40%40_&spm=a215sy.page_kla_personalpage.myservice.1&scm=20140734.mt_15947783.252361.dt_1-buid_&1-res_363675-s_20083755-cts_1622087724592-f_14129901-g_152-pi_251-fa_520350-isResource_1-url_aHR0cHM6Ly9tLWJlYW4ua2FvbGEuY29tL2FwcC9pbmRleD9fbm9oZWFkZXI9dHJ1ZSZfdG9nZ2xlVGl0bGU9dHJ1ZSZfZnVsbHNjcmVlbj10cnVlJl93az10cnVl-ml_15826917&klwv=true&platform=2&version=45000&apiVersion=208&appChannel=1&width=1170&network=wifi&appVersion=4.50.0&deviceUdID=YKAMNC1wUwYDAH1KoXmtXJp1&deviceUdidToken=1075706897C03A0BBDAC213D3E4D316B5258B353747D412D6470E15CFCB15AB3',
+        'Referer': 'https://m-bean.kaola.com/app/index',
+    }
+  }
+}
+
+
+function expirePostRequest(url, body = {}, timeout = 1000){
+  return new Promise(resolve => {
+    setTimeout(() => {
+      $.post(expiretaskUrl(url, body), (err, resp, data) => {
+        try {
+          if (err) {
+            console.log(err);
+            console.log('\nAPI查询请求失败 ‼️‼️')
+          } else {
+            result = JSON.parse(data);
+          }} catch (e) {
+            console.log(e)
+        } finally {
+          resolve(data);
+        }
+      })
+    }, timeout)
+  })
+} 
+
+ // BODYURL
+ function expiretaskUrl(url) {
+  return {
+    url: `${KAOLA_BEAN_API_HOST}/${url}`,
+    headers: {
+      'Cookie': cookie,
+      'Host': 'gw.kaola.com',
+      'Origin': 'https://s.kaola.com',
+      'Referer': 'https://s.kaola.com/activity-pages/pages/kaolaBean/beanDetail/index.html',
+      'gw-request-type': 'wap',
     }
   }
 }
