@@ -1,337 +1,210 @@
 /*
  * @Author: Xin https://github.com/Xin-code 
- * @Date: 2021-04-02 11:15:20 
+ * @Date: 2021-04-10 15:06:28 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-04-22 18:45:00
+ * @Last Modified time: 2021-05-30 14:37:48
  */
 
-const $ = Env('运动福极速版')
+const $ = Env('电视家')
 
-const notify = $.isNode() ? require('./sendNotify') : '';
+const notify = $.isNode() ? require('../../../Task/sendNotify') : '';
 
 $.message = ''
 
-const SPORT_FU_API_HOST = 'https://api.yundongfu.mobi'
+const TV_API_HOST = 'http://api.gaoqingdianshi.com'
 
-const TokenArr = []
+const CookieArr = [],AuthArr = []
 
-if ($.isNode()) {
-  if (process.env.SPORTFU_SPEED_TOKEN && process.env.SPORTFU_SPEED_TOKEN.indexOf('#') > -1) {
-    signToken = process.env.SPORTFU_SPEED_TOKEN.split('#');
-  }else if(process.env.SPORTFU_SPEED_TOKEN && process.env.SPORTFU_SPEED_TOKEN.indexOf('#') > -1) {
-    signToken = process.env.SPORTFU_SPEED_TOKEN.split('\n');
+
+
+if ($.isNode()) {  
+  if (process.env.TV_HOME_COOKIE && process.env.TV_HOME_COOKIE.indexOf('#') > -1) {
+    signCookie = process.env.TV_HOME_COOKIE.split('#');
+  }else if(process.env.TV_HOME_COOKIE && process.env.TV_HOME_COOKIE.indexOf('#') > -1) {
+    signCookie = process.env.TV_HOME_COOKIE.split('\n');
   }else{
-    signToken = [process.env.SPORTFU_SPEED_TOKEN]
+    signCookie = [process.env.TV_HOME_COOKIE]
   }
+  
+  Object.keys(signCookie).forEach((item) => {
+    if (signCookie[item]) {
+      CookieArr.push(signCookie[item])
+    }
+  })
 
-  Object.keys(signToken).forEach((item) => {
-    if (signToken[item]) {
-      TokenArr.push(signToken[item])
+  if (process.env.TV_HOME_AUTH && process.env.TV_HOME_AUTH.indexOf('#') > -1) {
+    signAuth = process.env.TV_HOME_AUTH.split('#');
+  }else if(process.env.TV_HOME_AUTH && process.env.TV_HOME_AUTH.indexOf('#') > -1) {
+    signAuth = process.env.TV_HOME_AUTH.split('\n');
+  }else{
+    signAuth = [process.env.TV_HOME_AUTH]
+  }
+  
+  Object.keys(signAuth).forEach((item) => {
+    if (signAuth[item]) {
+      AuthArr.push(signAuth[item])
     }
   })
 }
 
 !(async () => {
-  for (let i = 0; i < TokenArr.length; i++) {
-    token = TokenArr[i]
 
-    console.log(`········【帐号${i+1}】开始········`)
+  for(let i = 0 ; i < CookieArr.length;i++){
 
-    console.log(`👨‍💻执行 -> 初始化用户信息`)
-    await InitUserInfo()
+    cookie = CookieArr[i]
+    auth = AuthArr[i]
 
-    console.log(`\n💰执行 -> 获取金币信息`)
-    await goldInfo()
+    console.log(`📝执行 -> 每日签到`)
+    await Sign_In()
+
+    // console.log(`🏃‍执行 -> 走路赚钱`)
+    // for(let w = 1 ; w < 100 ; w++){
+    //   await Walk_Earn(w)
+    // }
+
+    console.log(`✍执行 -> 任务列表`)
+    await Get_Task()
+
+    console.log(`💰执行 -> 领取金币`)
+    await Gold_List()
     
-    console.log(`\n📝执行 -> 获取任务信息`)
-    await getTaskList()
-
-    console.log(`\n📝执行 -> 日常签到`)
-    for(let s = 2 ;s >= 1;s--){
-      await sign(s)
-    }
-
-    console.log(`\n💰执行 -> 随机奖励`)
-    for( a = 2 ; a >= 1; a--){
-      await RandomAward(a)
-    }
-
-    console.log(`\n📺执行 -> 看福利视频赚金币`)
-    for(let i = 0 ; i < 6 ; i++){
-      await TV_Earn()
-    }
-
-    console.log(`\n🥚执行 -> 砸鸡蛋`)
-    await Egg()
-
-    console.log(`\n🐟执行 -> 喂养锦鲤`)
-    await Fish()
-
-    console.log(`\n🌳执行 -> 摇钱树`)
-    await TreeRandom()
-    await TreeDouble()
-    await TreeGoldInfo()
-    
-
-    //推送消息
+    // 推送消息
     // await sendMsg()
-
-    console.log(`········【帐号${i+1}】结束········`)
-
   }
 })()
     .catch((e) => $.logErr(e))
     .finally(() => $.done())
-
     
-// 初始化用户信息👨‍💻
-async function InitUserInfo() {
-  // 调用API
-  await InitUserInfo_API()
-  
-  const result = JSON.parse($.InitUserInfo_API_Result)
-  // console.log(result)
-  console.log(`\n✅ 初始化用户信息完成~`)
-  $.alias = result.data.alias
-  console.log(`当前用户[${result.data.user.nick}]拥有:[${result.data.goldAccount.goldNum}]💰\n当前用户的邀请码为:${result.data.user.inviteCode}`)
-}
 
-// 获取金币信息💰
-async function goldInfo() {
-  // 调用API
-  await goldInfo_API()
-  
-  const result = JSON.parse($.goldInfo_API_Result)
-  // console.log(result)
-  console.log(`当前账号金币【${result.data.goldNum}】💰`)
-}
-
-// 获取任务信息📝
-async function getTaskList(){
-  // 调用API
-  await getTaskList_API()
-  
-  const result = JSON.parse($.getTaskList_API_Result)
-  //  console.log(result)
-  const TaskListInfo = result.data.taskDetails
-  console.log(`获取任务成功~`)
-  TaskListInfo.forEach((item)=>{
-    console.log(`任务【${item.goldDailyTaskSetting.name}】，可以获得💰【${item.goldDailyTaskSetting.goldNum}】个`)
-  })
-}
 
 // 日常签到📝
-async function sign(index){
+async function Sign_In() {
   // 调用API
-  await sign_API(index)
-  
-  const result = JSON.parse($.sign_API_Result)
-  // console.log(result)
-  if(index===2){
-    console.log(`📝每日签到：【${result.resp.msg}】`)
+  await Sign_In_API()
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`📝领取双倍日常签到奖励:【${result.resp.msg}】`)
+    console.log(result)
   }
 }
 
- // 随机奖励💰
- async function RandomAward(index) {
-   // 调用API
-   await RandomAward_API(index)
-   
-   const result = JSON.parse($.RandomAward_API_Result)
-   // console.log(result)
-   if(result.resp.code===310){
-     console.log(`❌ ${result.resp.msg},跳过···`)
-     return
- }
-}
-
-// 看福利视频赚金币📺
-async function TV_Earn() {
+// 走路赚钱🏃‍
+async function Walk_Earn(num) {
   // 调用API
-  await TV_Earn_API()
-
-  const result = JSON.parse($.TV_Earn_API_Result)
-  // console.log(result)
-  if(result.resp.code!==304){
-    console.log(`✅ ${result.resp.msg} 获得💰:[50]`)
+  await Walk_Earn_API(num)
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`❌ ${result.resp.msg}`)
+    console.log(`本次增加金币💰:[${result.data}]个`);
   }
 }
 
-// 砸鸡蛋🥚
-async function Egg(){
+// 任务列表✍
+async function Get_Task() {
   // 调用API
-  await Egg_API()
-
-  const result = JSON.parse($.Egg_API_Result)
-  // console.log(result)
-  if(result.resp.code!==502){
-    console.log(`✅ 砸鸡蛋养锦鲤获得💰:[50]`)
+  await Get_Task_API()
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`❌ ${result.resp.msg}`)
+    // console.log(result.data)
+    let taskList = result.data
+    for(let i = 0 ; i < taskList.length ; i++){
+      item = taskList[i]
+      console.log(`任务:[${item.name}],任务ID:[${item.code}],当前任务:[${item.dayCompCount}/${item.dayDoCountMax}]`)
+      console.log(`等待5s···`)
+      await $.wait(5000)
+      await Get_Task_Done(item.code)
+    }
   }
 }
 
-// 喂养锦鲤🐟
-async function Fish() {
+// 完成任务✅
+async function Get_Task_Done(code) {
   // 调用API
-  await Fish_API()
-
-  const result = JSON.parse($.Fish_API_Result)
-  // console.log(result)
-  if(result.resp.code!==503){
-    console.log(`✅ ${result.resp.msg} 喂养成功`)
+  await Get_Task_Done_API(code)
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`❌ ${result.resp.msg}`)
+    console.log(`任务:[${result.data.name}],获得金币💰:[${result.data.coin}]个`)
   }
 }
 
-// 100肥料奖励🌳
-async function TreeRandom() {
+// 金币列表💰
+async function Gold_List() {
   // 调用API
-  await TreeRandom_API()
-
-  const result = JSON.parse($.TreeRandom_API_Result)
-  // console.log(result)
-  console.log(`✅ ${result.resp.msg} 获得奖励🌳:[100]肥料`)
-}
-
-// 双倍助力奖励🌳
-async function TreeDouble(){
-  // 调用API
-  await TreeDouble_API()
-
-  const result = JSON.parse($.TreeRandom_API_Result)
-  // console.log(result)
-  console.log(`✅ ${result.resp.msg} 获得双倍助力奖励🌳`)
-}
-
-// 获得摇钱树上福袋信息
-async function TreeGoldInfo() {
-  // 调用API
-  await TreeGoldInfo_API()
-
-  const result = JSON.parse($.TreeGoldInfo_API_Result)
-  console.log(`开始执行领取[福袋]`)
-  if(result.resp!==303){
-    console.log(`❌ ${result.resp.msg}`)
+  await Gold_List_API()
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`获得领取ID:${result.data.id}`)
-    await TreeGoldReward(result.data.id)
+    let CoinList = result.data.tempCoin
+    for(let i = 0 ; i < CoinList.length ; i++){
+      coinInfo = CoinList[i]
+      console.log(`领取:任务[${coinInfo.from}],任务ID:[${coinInfo.id}],可领取金币:[${coinInfo.coin}]`)
+      console.log(`等待5s···`)
+      await $.wait(5000)
+      await Gold_Collect(coinInfo.id)
+    }
   }
 }
 
-// 领取摇钱树上福袋的奖励
-async function TreeGoldReward(id) {
+// 领取金币💰
+async function Gold_Collect(code){
   // 调用API
-  await TreeGoldReward_API(id)
-
-  const result = JSON.parse($.TreeGoldInfo_API_Result)
-  // console.log(result)
-  console.log(`✅ ${result.resp.msg} 获得福袋奖励💰`)
+  await Gold_Collect_API(code)
+  if(result.errCode!==0){
+    console.log(`❌ ${result.msg}`)
+  }else{
+    console.log(`领取金币💰成功`)
+  }
 }
 
 
+// 推送消息
 async function sendMsg() {
   await notify.sendNotify(`xxxx`,`${$.message}`);
 }
 
 // ==================API==================
-// 初始化用户信息👨‍💻API
-async function InitUserInfo_API() {
-  $.InitUserInfo_API_Result = await getRequest(`v1/user/view`)
-}
-
-// 获取金币信息💰API
-async function goldInfo_API() {
-  $.goldInfo_API_Result = await getRequest(`v1/gold/account?alias=${$.alias}`)
-}
-
-// 获取任务信息📝API
-async function getTaskList_API() {
-  $.getTaskList_API_Result = await getRequest(`v1/gold/dailyTask?deviceType=2`)
-}
 
 // 日常签到📝API
-async function sign_API(index) {
-  $.sign_API_Result = await getRequest(`v1/gold/sign?goldSignSettingId=1&hasDouble=${index}`)
+async function Sign_In_API() {
+  await getRequest(`api/v7/sign/signin?accelerate=0&ext=0&ticket=`)
 }
 
-// 随机奖励💰API
-// goldNum 金币数量30个
-// doubleType
-// hasDouble 是否是双倍 1为双倍 2为不是双倍(先领取不是双倍的2，在领取为双倍的1)
-async function RandomAward_API(index) {
-  $.RandomAward_API_Result = await postNoBodyRequest(`v1/gold/random?doubleType=2&goldNum=30&hasDouble=${index}`)
+// 走路赚钱🏃‍API
+async function Walk_Earn_API(num) {
+  await getRequest(`api/taskext/getCoin?code=walk&coin=${num}&ext=0`)
 }
 
-// 看福利视频赚金币📺API
-async function TV_Earn_API() {
-  $.TV_Earn_API_Result = await postNoBodyRequest(`v1/gold/daily?goldDailyTaskSettingId=2`)
+// 任务列表✍API
+async function Get_Task_API() {
+  await getRequest(`api/v5/task/get`)
 }
 
-// 砸鸡蛋🥚API
-async function Egg_API() {
-  $.Egg_API_Result = await postNoBodyRequest(`v1/chick/egg/smash`)
+// 完成任务✅API
+async function Get_Task_Done_API(code) {
+  await getRequest(`api/v5/task/complete?code=${code}&comType=0`)
 }
 
-// 喂养锦鲤🐟API
-async function Fish_API() {
-  $.Fish_API_Result = await postNoBodyRequest(`v1/chick/feed`)
+// 金币列表💰API
+async function Gold_List_API() {
+  await getRequest(`api/coin/info`)
 }
 
-// 100肥料奖励🌳API
-async function TreeRandom_API() {
-  $.TreeRandom_API_Result = await postNoBodyRequest(`v1/gold/kettle/random?waterNum=100`)
-}
-
-// 双倍助力奖励🌳API
-async function TreeDouble_API() {
-  $.TreeDouble_API_Result = await postNoBodyRequest(`v1/gold/kettle/set/double`)
-}
-
-// 获得摇钱树上福袋信息API
-async function TreeGoldInfo_API() {
-  $.TreeGoldInfo_API_Result = await postNoBodyRequest(`v1/gold/duration?doubleType=2&goldDurationId=1&hasDouble=2`)
-}
-
-// 领取摇钱树上福袋的奖励API
-async function TreeGoldReward_API(id) {
-  $.TreeGoldReward_API_Result = await postNoBodyRequest(`v1/gold/duration?doubleOperateId=${id}&doubleType=2&goldDurationId=1&hasDouble=1`)
+// 领取金币💰API
+async function Gold_Collect_API(code) {
+  await getRequest(`api/coin/temp/exchange?id=${code}`)
 }
 
 
+// ==================请求==================
 
-// Get请求
+// 正常请求 增加代码的复用率
+// RequestBody
 function getRequest(function_id, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.get(gettaskUrl(function_id), (err, resp, data) => {
-        try {
-          if (err) {
-            console.log('\nAPI查询请求失败 ‼️‼️')
-            console.log(JSON.stringify(err));
-            console.log(`function_id:${function_id}`)
-          } else {
-            result = JSON.parse(data);
-          }} catch (e) {
-            console.log(e)
-        } finally {
-          resolve(data);
-        }
-      })
-    }, timeout)
-  })
-}
-
-// Post请求
-function postNoBodyRequest(function_id,timeout = 1000){
-  return new Promise(resolve => {
-    setTimeout(() => {
-      $.post(postNoBodyTaskUrl(function_id), (err, resp, data) => {
+      $.get(taskUrl(function_id), (err, resp, data) => {
         try {
           if (err) {
             console.log('\nAPI查询请求失败 ‼️‼️')
@@ -349,35 +222,40 @@ function postNoBodyRequest(function_id,timeout = 1000){
   })
 } 
 
-// URL
-function gettaskUrl(activity) {
-  return {
-    url: `${SPORT_FU_API_HOST}/${activity}`,
-    headers: {
-      "Accept": "*/*",
-      "Accept-Encoding": "gzip, deflate, br",
-      "Accept-Language": "zh-cn",
-      "Connection": "keep-alive",
-      "Content-Type": "application/json",
-      'Host': 'api.yundongfu.mobi',
-      'token': token,
-    }
-  }
-}
 
-function postNoBodyTaskUrl(activity) {
+// URL
+function taskUrl(activity) {
   return {
-    url: `${SPORT_FU_API_HOST}/${activity}`,
+    url: `${TV_API_HOST}/${activity}`,
     headers: {
-      "Accept": "*/*",
-      "Accept-Encoding": "gzip;q=1.0, compress;q=0.5",
-      "Accept-Language": "zh-Hans-CN;q=1.0",
-      "Connection": "keep-alive",
-      "Content-Type": "application/json",
-      'Host': 'api.yundongfu.mobi',
-      'token': token,
-      'deviceType':2,
-      'version': '1.1.0',
+      'Accept': '*/*',
+      'Accept-Encoding': 'gzip, deflate',
+      'Accept-Language': 'zh-Hans;q=1',
+      'AppVerCode': '195',
+      'AppVerName': '1.86',
+      'Authorization': auth,
+      'Cache-Control': 'no-cache',
+      'Connection': 'close',
+      'Cookie': cookie,
+      'Generation': 'com.dianshijia.mobile.ios',
+      'Host': 'api.gaoqingdianshi.com',
+      'HwDevice': 'Iphone',
+      'HwId': '385ba5a9f7224c5fb877d98aefe7e2c6',
+      'MarketChannelName': 'Iphone',
+      'User-Agent': 'Dsj/Client1.2',
+      'appId': `19227f89ea1a166451593601eb8a1b4f`,
+      'areaCode': '330000',
+      'cityCode': '330100',
+      'countryCode': 'CN',
+      'erid': '59081',
+      'gpsCityCode': '330100',
+      'hwBrand': 'iPhone',
+      'hwModel': 'iPhone13,2',
+      'language': 'zh_CN',
+      'routerMac': '48eec38ea84',
+      'ssid': '0198fede-19c9-4e2c-87ce-d6c496528f56',
+      'userid': '160183d84ac4dd90d487cfe0ac964452',
+      'uuid': '385ba5a9f7224c5fb877d98aefe7e2c6',
     }
   }
 }

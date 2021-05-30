@@ -1,44 +1,79 @@
 /*
  * @Author: Xin https://github.com/Xin-code 
- * @Date: 2021-05-25 21:11:53 
+ * @Date: 2021-04-02 11:15:20 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-28 01:35:16
+ * @Last Modified time: 2021-05-30 14:37:51
  */
 
-const $ = Env('饿了么-领豆')
+const $ = Env('运动福极速版')
 
-const notify = $.isNode() ? require('./sendNotify') : '';
+const notify = $.isNode() ? require('../../../Task/sendNotify') : '';
 
-const ELEME_API_HOST = 'https://h5.ele.me/restapi/biz.svip_scene/svip/engine/queryTrafficSupply'
+$.message = ''
 
-const CookiesArr = []
+const SPORT_FU_API_HOST = 'https://api.yundongfu.mobi'
 
-// if ($.isNode()) {
-  // if (process.env.XXXX_XXXXX && process.env.XXXX_XXXXX.indexOf('#') > -1) {
-  //   xxxx = process.env.XXXX_XXXXX.split('#');
-  // }else if(process.env.XXXX_XXXXX && process.env.XXXX_XXXXX.indexOf('#') > -1) {
-  //   xxxx = process.env.XXXX_XXXXX.split('\n');
-  // }else{
-  //   xxxx = [process.env.XXXX_XXXXX]
-  // }
+const TokenArr = []
 
-  // Object.keys(xxxx).forEach((item) => {
-  //   if (xxxx[item]) {
-  //     XXXXxxxx.push(xxxx[item])
-  //   }
-  // })
-// }
+if ($.isNode()) {
+  if (process.env.SPORTFU_SPEED_TOKEN && process.env.SPORTFU_SPEED_TOKEN.indexOf('#') > -1) {
+    signToken = process.env.SPORTFU_SPEED_TOKEN.split('#');
+  }else if(process.env.SPORTFU_SPEED_TOKEN && process.env.SPORTFU_SPEED_TOKEN.indexOf('#') > -1) {
+    signToken = process.env.SPORTFU_SPEED_TOKEN.split('\n');
+  }else{
+    signToken = [process.env.SPORTFU_SPEED_TOKEN]
+  }
+
+  Object.keys(signToken).forEach((item) => {
+    if (signToken[item]) {
+      TokenArr.push(signToken[item])
+    }
+  })
+}
 
 !(async () => {
-  for (let i = 0; i < CookiesArr.length; i++) {
-    cookie = CookiesArr[i]
+  for (let i = 0; i < TokenArr.length; i++) {
+    token = TokenArr[i]
 
     console.log(`········【帐号${i+1}】开始········`)
 
-    console.log('\n😋执行 -> 初始化饿了么任务');
-    await init_eleme()
+    console.log(`👨‍💻执行 -> 初始化用户信息`)
+    await InitUserInfo()
+
+    console.log(`\n💰执行 -> 获取金币信息`)
+    await goldInfo()
     
-    // 推送消息
+    console.log(`\n📝执行 -> 获取任务信息`)
+    await getTaskList()
+
+    console.log(`\n📝执行 -> 日常签到`)
+    for(let s = 2 ;s >= 1;s--){
+      await sign(s)
+    }
+
+    console.log(`\n💰执行 -> 随机奖励`)
+    for( a = 2 ; a >= 1; a--){
+      await RandomAward(a)
+    }
+
+    console.log(`\n📺执行 -> 看福利视频赚金币`)
+    for(let i = 0 ; i < 6 ; i++){
+      await TV_Earn()
+    }
+
+    console.log(`\n🥚执行 -> 砸鸡蛋`)
+    await Egg()
+
+    console.log(`\n🐟执行 -> 喂养锦鲤`)
+    await Fish()
+
+    console.log(`\n🌳执行 -> 摇钱树`)
+    await TreeRandom()
+    await TreeDouble()
+    await TreeGoldInfo()
+    
+
+    //推送消息
     // await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
@@ -48,55 +83,238 @@ const CookiesArr = []
     .catch((e) => $.logErr(e))
     .finally(() => $.done())
 
-
-// ==================功能模块==================
-// 😋初始化饿了么任务
-async function init_eleme() {
+    
+// 初始化用户信息👨‍💻
+async function InitUserInfo() {
   // 调用API
-  await init_eleme_API()
+  await InitUserInfo_API()
+  
+  const result = JSON.parse($.InitUserInfo_API_Result)
   // console.log(result)
-  if(result.code!=='200'){
-    console.log(`❌ ${result.msg}`);
-  }else{
-    console.log('✅成功获取所有任务');
-    // console.log(result.data[0].data);
-    let taskListArr = result.data[0].data
-    taskListArr.forEach((item)=>{
-      // console.log(item.attribute);
-      console.log(`任务【${item.attribute.showTitle}】,[${item.attribute.widgetTitleUnFinish===undefined?item.attribute.subTitle:item.attribute.widgetTitleUnFinish}],可获得${item.attribute.costFoodiePea}个🥔`);
-            console.log(item.attribute.missionDefId);
-            console.log(item.attribute.pageSpm);
-    })
+  console.log(`\n✅ 初始化用户信息完成~`)
+  $.alias = result.data.alias
+  console.log(`当前用户[${result.data.user.nick}]拥有:[${result.data.goldAccount.goldNum}]💰\n当前用户的邀请码为:${result.data.user.inviteCode}`)
+}
 
+// 获取金币信息💰
+async function goldInfo() {
+  // 调用API
+  await goldInfo_API()
+  
+  const result = JSON.parse($.goldInfo_API_Result)
+  // console.log(result)
+  console.log(`当前账号金币【${result.data.goldNum}】💰`)
+}
+
+// 获取任务信息📝
+async function getTaskList(){
+  // 调用API
+  await getTaskList_API()
+  
+  const result = JSON.parse($.getTaskList_API_Result)
+  //  console.log(result)
+  const TaskListInfo = result.data.taskDetails
+  console.log(`获取任务成功~`)
+  TaskListInfo.forEach((item)=>{
+    console.log(`任务【${item.goldDailyTaskSetting.name}】，可以获得💰【${item.goldDailyTaskSetting.goldNum}】个`)
+  })
+}
+
+// 日常签到📝
+async function sign(index){
+  // 调用API
+  await sign_API(index)
+  
+  const result = JSON.parse($.sign_API_Result)
+  // console.log(result)
+  if(index===2){
+    console.log(`📝每日签到：【${result.resp.msg}】`)
+  }else{
+    console.log(`📝领取双倍日常签到奖励:【${result.resp.msg}】`)
   }
 }
 
-// 推送消息
+ // 随机奖励💰
+ async function RandomAward(index) {
+   // 调用API
+   await RandomAward_API(index)
+   
+   const result = JSON.parse($.RandomAward_API_Result)
+   // console.log(result)
+   if(result.resp.code===310){
+     console.log(`❌ ${result.resp.msg},跳过···`)
+     return
+ }
+}
+
+// 看福利视频赚金币📺
+async function TV_Earn() {
+  // 调用API
+  await TV_Earn_API()
+
+  const result = JSON.parse($.TV_Earn_API_Result)
+  // console.log(result)
+  if(result.resp.code!==304){
+    console.log(`✅ ${result.resp.msg} 获得💰:[50]`)
+  }else{
+    console.log(`❌ ${result.resp.msg}`)
+  }
+}
+
+// 砸鸡蛋🥚
+async function Egg(){
+  // 调用API
+  await Egg_API()
+
+  const result = JSON.parse($.Egg_API_Result)
+  // console.log(result)
+  if(result.resp.code!==502){
+    console.log(`✅ 砸鸡蛋养锦鲤获得💰:[50]`)
+  }else{
+    console.log(`❌ ${result.resp.msg}`)
+  }
+}
+
+// 喂养锦鲤🐟
+async function Fish() {
+  // 调用API
+  await Fish_API()
+
+  const result = JSON.parse($.Fish_API_Result)
+  // console.log(result)
+  if(result.resp.code!==503){
+    console.log(`✅ ${result.resp.msg} 喂养成功`)
+  }else{
+    console.log(`❌ ${result.resp.msg}`)
+  }
+}
+
+// 100肥料奖励🌳
+async function TreeRandom() {
+  // 调用API
+  await TreeRandom_API()
+
+  const result = JSON.parse($.TreeRandom_API_Result)
+  // console.log(result)
+  console.log(`✅ ${result.resp.msg} 获得奖励🌳:[100]肥料`)
+}
+
+// 双倍助力奖励🌳
+async function TreeDouble(){
+  // 调用API
+  await TreeDouble_API()
+
+  const result = JSON.parse($.TreeRandom_API_Result)
+  // console.log(result)
+  console.log(`✅ ${result.resp.msg} 获得双倍助力奖励🌳`)
+}
+
+// 获得摇钱树上福袋信息
+async function TreeGoldInfo() {
+  // 调用API
+  await TreeGoldInfo_API()
+
+  const result = JSON.parse($.TreeGoldInfo_API_Result)
+  console.log(`开始执行领取[福袋]`)
+  if(result.resp!==303){
+    console.log(`❌ ${result.resp.msg}`)
+  }else{
+    console.log(`获得领取ID:${result.data.id}`)
+    await TreeGoldReward(result.data.id)
+  }
+}
+
+// 领取摇钱树上福袋的奖励
+async function TreeGoldReward(id) {
+  // 调用API
+  await TreeGoldReward_API(id)
+
+  const result = JSON.parse($.TreeGoldInfo_API_Result)
+  // console.log(result)
+  console.log(`✅ ${result.resp.msg} 获得福袋奖励💰`)
+}
+
+
 async function sendMsg() {
   await notify.sendNotify(`xxxx`,`${$.message}`);
 }
 
 // ==================API==================
-// 初始化饿了么
-async function init_eleme_API() {
-  await getRequest(`tagParams[]=%7B%22tagCode%22:%22224166%22%7D&bizCode=biz_card_main&longitude=120.09834289550781&latitude=30.27116584777832`)
+// 初始化用户信息👨‍💻API
+async function InitUserInfo_API() {
+  $.InitUserInfo_API_Result = await getRequest(`v1/user/view`)
+}
+
+// 获取金币信息💰API
+async function goldInfo_API() {
+  $.goldInfo_API_Result = await getRequest(`v1/gold/account?alias=${$.alias}`)
+}
+
+// 获取任务信息📝API
+async function getTaskList_API() {
+  $.getTaskList_API_Result = await getRequest(`v1/gold/dailyTask?deviceType=2`)
+}
+
+// 日常签到📝API
+async function sign_API(index) {
+  $.sign_API_Result = await getRequest(`v1/gold/sign?goldSignSettingId=1&hasDouble=${index}`)
+}
+
+// 随机奖励💰API
+// goldNum 金币数量30个
+// doubleType
+// hasDouble 是否是双倍 1为双倍 2为不是双倍(先领取不是双倍的2，在领取为双倍的1)
+async function RandomAward_API(index) {
+  $.RandomAward_API_Result = await postNoBodyRequest(`v1/gold/random?doubleType=2&goldNum=30&hasDouble=${index}`)
+}
+
+// 看福利视频赚金币📺API
+async function TV_Earn_API() {
+  $.TV_Earn_API_Result = await postNoBodyRequest(`v1/gold/daily?goldDailyTaskSettingId=2`)
+}
+
+// 砸鸡蛋🥚API
+async function Egg_API() {
+  $.Egg_API_Result = await postNoBodyRequest(`v1/chick/egg/smash`)
+}
+
+// 喂养锦鲤🐟API
+async function Fish_API() {
+  $.Fish_API_Result = await postNoBodyRequest(`v1/chick/feed`)
+}
+
+// 100肥料奖励🌳API
+async function TreeRandom_API() {
+  $.TreeRandom_API_Result = await postNoBodyRequest(`v1/gold/kettle/random?waterNum=100`)
+}
+
+// 双倍助力奖励🌳API
+async function TreeDouble_API() {
+  $.TreeDouble_API_Result = await postNoBodyRequest(`v1/gold/kettle/set/double`)
+}
+
+// 获得摇钱树上福袋信息API
+async function TreeGoldInfo_API() {
+  $.TreeGoldInfo_API_Result = await postNoBodyRequest(`v1/gold/duration?doubleType=2&goldDurationId=1&hasDouble=2`)
+}
+
+// 领取摇钱树上福袋的奖励API
+async function TreeGoldReward_API(id) {
+  $.TreeGoldReward_API_Result = await postNoBodyRequest(`v1/gold/duration?doubleOperateId=${id}&doubleType=2&goldDurationId=1&hasDouble=1`)
 }
 
 
 
-// ==================请求==================
-
-// 正常请求 增加代码的复用率
-// RequestBody
-function getRequest(function_id,timeout = 1000){
+// Get请求
+function getRequest(function_id, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.get(taskUrl(function_id), (err, resp, data) => {
+      $.get(gettaskUrl(function_id), (err, resp, data) => {
         try {
           if (err) {
             console.log('\nAPI查询请求失败 ‼️‼️')
             console.log(JSON.stringify(err));
-            // console.log(`function_id:${function_id}`)
+            console.log(`function_id:${function_id}`)
           } else {
             result = JSON.parse(data);
           }} catch (e) {
@@ -107,26 +325,13 @@ function getRequest(function_id,timeout = 1000){
       })
     }, timeout)
   })
-} 
-
-
-// URL
-function taskUrl(function_id) {
-  return {
-    url: `${ELEME_API_HOST}?${function_id}`,
-    headers: {
-      'Host': 'h5.ele.me',
-      'Cookie': cookie,
-    }
-  }
 }
 
-// 带Body的请求 增加代码的复用率
-// RequestBody
-function postRequestBody(function_id, body = {}, timeout = 1000){
+// Post请求
+function postNoBodyRequest(function_id,timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.post(BodytaskUrl(function_id, body), (err, resp, data) => {
+      $.post(postNoBodyTaskUrl(function_id), (err, resp, data) => {
         try {
           if (err) {
             console.log('\nAPI查询请求失败 ‼️‼️')
@@ -144,14 +349,35 @@ function postRequestBody(function_id, body = {}, timeout = 1000){
   })
 } 
 
- // BODYURL
- function BodytaskUrl(activity, body={}) {
+// URL
+function gettaskUrl(activity) {
   return {
-    url: `${XXXX_API_HOST}/${activity}`,
-    body: body,
+    url: `${SPORT_FU_API_HOST}/${activity}`,
     headers: {
-      'Host': '',
-      'User-Agent': '',
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "zh-cn",
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      'Host': 'api.yundongfu.mobi',
+      'token': token,
+    }
+  }
+}
+
+function postNoBodyTaskUrl(activity) {
+  return {
+    url: `${SPORT_FU_API_HOST}/${activity}`,
+    headers: {
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip;q=1.0, compress;q=0.5",
+      "Accept-Language": "zh-Hans-CN;q=1.0",
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      'Host': 'api.yundongfu.mobi',
+      'token': token,
+      'deviceType':2,
+      'version': '1.1.0',
     }
   }
 }
