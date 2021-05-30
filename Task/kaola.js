@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-27 13:36:57 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-30 13:30:52
+ * @Last Modified time: 2021-05-30 19:01:59
  */
 
 const $ = Env('考拉海购')
@@ -23,6 +23,9 @@ const jobIdArr = []
 const circleJobIdArr = []
 // 需要循环的次数
 const circleJobTime = []
+
+// 总共获得考拉豆🥔
+const total = 0
 
 if ($.isNode()) {
   if (process.env.KAOLA_COOKIE && process.env.KAOLA_COOKIE.indexOf('#') > -1) {
@@ -95,6 +98,7 @@ async function daily_sign() {
       // 重复签到
       console.log(`❌ ${result.data.msg}`);
   }else{
+      $.total+=result.data.point
       // 签到成功
       console.log(`✅ ${result.data.msg}\n 本次签到获得${result.data.point}考拉豆🥔 \n 总共签到:${result.data.signCount}天`);
   }
@@ -110,6 +114,7 @@ async function task_list(){
     }else{
         let taskList = result.data.allJobList
         taskList.forEach((item) => {
+          $.total+=item.pointNum
           // 具体每个任务
             console.log(`${item.text}=>[${item.title} ${item.completeNum}/${item.missionNum}],每次可获得${item.pointNum}个考拉豆🥔`);
             if(item.missionNum>1){
@@ -157,15 +162,15 @@ async function expire_beans(){
   if(result.code!==0){
     console.log(`❌ ${result.msg}`);
   }else{
-    $.message+=`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个海拉豆🥔\n${result.body[0].desc}`
-    console.log(`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个海拉豆🥔\n${result.body[0].desc}`);
+    $.message+=`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个考拉豆🥔\n${result.body[0].desc}`
+    console.log(`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个考拉豆🥔\n${result.body[0].desc}`);
   }
 }
 
 
 // 推送消息
 async function sendMsg() {
-  await notify.sendNotify(`考拉海购`,`${$.message}`);
+  await notify.sendNotify(`考拉海购`,`本次获得[${$.total}]个考拉豆🥔\n${$.message}`);
 }
 
 // ==================API==================
