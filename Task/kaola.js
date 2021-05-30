@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-27 13:36:57 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-30 19:01:59
+ * @Last Modified time: 2021-05-30 23:41:11
  */
 
 const $ = Env('考拉海购')
@@ -25,7 +25,7 @@ const circleJobIdArr = []
 const circleJobTime = []
 
 // 总共获得考拉豆🥔
-const total = 0
+$.total = 0
 
 if ($.isNode()) {
   if (process.env.KAOLA_COOKIE && process.env.KAOLA_COOKIE.indexOf('#') > -1) {
