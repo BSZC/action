@@ -49,7 +49,7 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 async function xxx() {
   // 调用API
   await xxx_API()
-  let result = JSON.parse($.xxx_API_Result)
+//   console.log(result);
   if(result.code!==1){
     console.log(`❌ ${result.msg}`)
   }else{
@@ -71,7 +71,7 @@ async function xxx_API() {
 // API
 async function xxx_XXX_API() {
   let body = ``
-  $.xxx_API_Result = await postRequestBody(``,body)
+  await postRequestBody(``,body)
 }
 
 
