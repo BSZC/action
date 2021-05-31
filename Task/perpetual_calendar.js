@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 09:59:19
+ * @Last Modified time: 2021-05-31 11:19:20
  */
 
 const $ = Env('万年历')
@@ -43,6 +43,10 @@ if ($.isNode()) {
 
     console.log(`········【帐号${i+1}】开始········`)
 
+    // 邀请好友
+    console.log(`执行 -> 邀请好友`);
+    await invite_new()
+
     // 任务列表
     console.log(`执行 -> 任务列表`);
     await task_list()
@@ -78,15 +82,22 @@ if ($.isNode()) {
 
 
 // ==================功能模块==================
-// 红包签到
-async function hb_sign() {
-  // 红包签到API
-  await hb_sign_API()
-  // console.log(result);
+// 邀请好友
+async function invite_new(){
+  // 邀请好友API
+  await invite_new_API();
+  console.log(result)
   if(result.status!==200){
     console.log(`❌ ${result.msg}`)
   }else{
-    console.log(`获得${result.data.cash/100}元`)
+    if(result.data.coin!==0){
+        console.log(`本次获得金币💰:${result.data.coin}个`)
+        if(result.data.coin!==undefined){
+            $.total+=result.data.coin
+        }
+    }else{
+        console.log(`${result.data.msg}`);
+    }
   }
 }
 
@@ -124,6 +135,18 @@ async function task_list(){
   }
 }
 
+// 红包签到
+async function hb_sign() {
+    // 红包签到API
+    await hb_sign_API()
+    // console.log(result);
+    if(result.status!==200){
+      console.log(`❌ ${result.msg}`)
+    }else{
+      console.log(`获得${result.data.cash/100}元`)
+    }
+  }
+
 
 // 完成任务
 async function finish_task(mission){
@@ -150,14 +173,19 @@ async function sendMsg() {
 }
 
 // ==================API==================
-// 红包签到API
-async function hb_sign_API() {
-  await postRequest(`api/Coin_Activity/CompleteHongBao?${url}`)
+// 邀请好友API
+async function invite_new_API(){
+await getRequest(`api/Coin_Activity/Complete?&code=Inviter_code&otherinfo=3odb62&${url}`)
 }
 
 // 获取任务列表API
 async function task_list_API() {
   await getRequest(`api/Coin_Activity/GetMissions?${url}`)
+}
+
+// 红包签到API
+async function hb_sign_API() {
+  await postRequest(`api/Coin_Activity/CompleteHongBao?${url}`)
 }
 
 // 完成任务API
