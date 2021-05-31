@@ -1,7 +1,6 @@
 name: 微博签到
 
 on:
-  push:
   workflow_dispatch:
   schedule:
     - cron: '35 0 * * *'
