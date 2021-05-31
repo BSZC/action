@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 00:24:34
+ * @Last Modified time: 2021-05-31 09:59:19
  */
 
 const $ = Env('万年历')
@@ -16,7 +16,7 @@ $.message = ''
 const notify = $.isNode() ? require('./sendNotify') : '';
 
 // 任务集合
-const missionArr = ['signin']
+const missionArr = []
 
 $.total = 0
 
@@ -43,13 +43,13 @@ if ($.isNode()) {
 
     console.log(`········【帐号${i+1}】开始········`)
 
-    // 红包签到
-    console.log(`执行 -> 红包签到`);
-    await hb_sign()
-
     // 任务列表
     console.log(`执行 -> 任务列表`);
     await task_list()
+
+    // 红包签到
+    console.log(`执行 -> 红包签到`);
+    await hb_sign()
 
     // 完成任务
     console.log(`执行 -> 完成任务`)
@@ -96,14 +96,27 @@ async function task_list(){
   await task_list_API()
   // console.log(result);
   result.data.forEach((item)=>{
+    // console.log(item);
+    // 日常签到 type =1
+    if(item.type === 1){
+        missionArr.push(item.code)
+    }
     // 新手任务 type=3 || 每日任务 type=4
-    if(item.type === 3||item.type ===4){
+    else if(item.type === 3||item.type ===4){
       // console.log(`新手任务`);
       let mission = item.missions
       mission.forEach((subItem)=>{
         // console.log(subItem.subItems);
         missionArr.push(subItem.subItems[0].code)
       })
+    }
+    else{
+        let info = []
+        item.hongbaos.forEach((item)=>{
+            info.push(`${item/100}元`)
+        })
+        $.message+=`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`
+        console.log(`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`);
     }
   })
   if(missionArr.length!==0){
