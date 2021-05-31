@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-04-06 17:21:16 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-04-16 10:59:57
+ * @Last Modified time: 2021-05-31 16:43:07
  */
 
 const $ = Env('朗果英语')
@@ -45,8 +45,6 @@ if ($.isNode()) {
   })
 }
 
-
-
 !(async () => {
   for (let i = 0; i < TokenArr.length; i++) {
     token = TokenArr[i]
@@ -54,53 +52,41 @@ if ($.isNode()) {
 
     console.log(`········【帐号${i+1}】开始········`)
     
-    // 任务列表&初始化账号
+    $.Num = 0
+
     console.log(`\n📕执行 -> 获取任务列表`)
-    await TaskList()
+    await task_list()
 
-    // 签到
     console.log(`\n📕执行 -> 每日签到`)
-    await SignIn()
+    await daily_sign()
 
-    // 🎧听力练习
-    console.log(`\n🎧执行 -> 听力练习`)
-    for(let l = 0; l<3 ; l++){
-      console.log(`当前完成第${l+1}次听力练习`)
-      await Listen_Training()
-      console.log(`等待了5s···`)
-      await $.wait(5000)
+    for(let type = 1; type < 3;type++){
+        let NowName = type===1?'🎧听力练习':'📕阅读看世界'
+        console.log(`\n执行 -> ${NowName}`);
+        for(let l = 0; l<3 ; l++){
+            console.log(`当前完成第${l+1}次${NowName}`)
+            await training(type)
+        }
     }
 
-    // 📕阅读看世界
-    console.log(`\n📕执行 -> 阅读看世界`)
-    for(let l = 0; l<3 ; l++){
-      console.log(`当前完成第${l+1}次阅读`)
-      await Read_Training()
-      console.log(`等待了5s···`)
-      await $.wait(5000)
-    }
+    $.Num++
 
-    // 完成任务
     console.log(`\n执行 -> 完成任务`)
-    await Done()
+    await task_list()
     
-    // 🧧领取奖励
     console.log(`\n🧧执行 -> 领取奖励`)
-    console.log(`当前领取TopicId数组为：${TopicIdArr}`)
-    for(let a = 0 ; a < 3; a++){
-      topicId = TopicIdArr[a]
+    for(let i = 0 ; i < 3; i++){
+      topicId = TopicIdArr[i]
       await $.wait(1000)
-      console.log(`当前领取的TopicId为:${topicId}`)
-      await Award(topicId)
-      console.log(`等待了5s···`)
-      await $.wait(5000)
+      await award(topicId)
     }
-    
+
+    $.Num++
+
     // 📧推送消息
     await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
-
   }
 })()
     .catch((e) => $.logErr(e))
@@ -108,170 +94,74 @@ if ($.isNode()) {
     
 
 // 任务列表&初始化账号
-async function TaskList(){
- return new Promise((resolve) => {
-   let body = `{"uid":${uid},"channelNumber":2}`
-   $.post(BodytaskUrl(`task/daily/taskList`,body),async(error, response, data) =>{
-    try{
-      if (error) {
-        console.log(`${JSON.stringify(error)}`)
-        console.log(`API请求失败，请检查网路重试`)
-      } else {
-        const result = JSON.parse(data)
-        // 反馈信息
-        // console.log(result)
-        if(result.code!==200){
-          console.log(`🧧 当前红包:${result.result.userRedAmout}`)
-          $.message+=`🧧 当前红包:${result.result.userRedAmout}\n`
-          console.log(`🎈 当前积分:${result.result.userScore}`)
-          $.message+=`🎈 当前积分:${result.result.userScore}\n`
-        }else{
-          console.log(`❌ 初始化失败！`)
-        }
-      }}catch(e) {
-          console.log(e)
-        } finally {
-        resolve();
-      } 
-    })
-   })
-}
-
-// 签到
-async function SignIn() {
-  return new Promise((resolve) => {
-    let body = `{"uid":${uid},"channelNumber":2}`
-    $.post(BodytaskUrl(`sign/day/sinIn`,body),async(error, response, data) =>{
-     try{
-       if (error) {
-         console.log(`${JSON.stringify(error)}`)
-         console.log(`API请求失败，请检查网路重试`)
-       } else {
-         const result = JSON.parse(data)
-         // 反馈信息
-        //  console.log(result) 
-         if(result.result.integralNum!==1){
-           console.log(`❌ 签到失败||重复签到`)
-         }else{
-           console.log(`✅ 签到成功！`)
-           $.message+=`✅ 签到成功！\n`
-         }
-       }}catch(e) {
-           console.log(e)
-         } finally {
-         resolve();
-       } 
-     })
-    })
-}
-
-// 🎧听力练习
-async function Listen_Training(timeout = 1000) {
-  return new Promise((resolve) => {
-    let body = `{"uid":${uid},"channelNumber":2,"topicId":${Math.ceil(Math.random()*50000)},"type":"1"}`
-    $.post(BodytaskUrl(`training/addUserScore`,body),async(error, response, data) =>{
-     try{
-       if (error) {
-         console.log(`${JSON.stringify(error)}`)
-         console.log(`API请求失败，请检查网路重试`)
-       } else {
-         const result = JSON.parse(data)
-         // 反馈信息
-         // console.log(result) 
-        console.log(`${result.result.msg}`)
-       }}catch(e) {
-           console.log(e)
-         } finally {
-         resolve();
-       } 
-     })
-    },timeout)
-}
-
-// 📕阅读看世界
-async function Read_Training(timeout = 1000) {
-  return new Promise((resolve) => {
-    let body = `{"uid":${uid},"channelNumber":2,"topicId":${Math.ceil(Math.random()*50000)},"type":"2"}`
-    $.post(BodytaskUrl(`training/addUserScore`,body),async(error, response, data) =>{
-     try{
-       if (error) {
-         console.log(`${JSON.stringify(error)}`)
-         console.log(`API请求失败，请检查网路重试`)
-       } else {
-         const result = JSON.parse(data)
-         // 反馈信息
-         // console.log(result) 
-        console.log(`${result.result.msg}`)
-       }}catch(e) {
-           console.log(e)
-         } finally {
-         resolve();
-       } 
-     })
-    },timeout)
-}
-
-// 完成任务推送到数组内
-async function Done() {
-  return new Promise((resolve) => {
-    let body = `{"uid":${uid},"channelNumber":2}`
-    $.post(BodytaskUrl(`task/daily/taskList`,body),async(error, response, data) =>{
-      try{
-        if (error) {
-          console.log(`${JSON.stringify(error)}`)
-          console.log(`API请求失败，请检查网路重试`)
-        } else {
-          const result = JSON.parse(data)
-          // 反馈信息
-          // console.log(result)
-          if(result.code!==200){
+async function task_list(){
+    // 调用任务列表API
+    await task_list_API()
+    // console.log(result);
+    if(result.code!=='200'){
+        console.log(`❌ ${result.message}`);
+    }else{
+        // 完成任务前的初始化信息
+        if($.Num===0){
+            console.log(`任务前初始化信息：`);
+            console.log(`🧧 当前红包:${result.result.userRedAmout}`)
+            console.log(`🎈 当前积分:${result.result.userScore}`)
+        }else if($.Num===1){
+            console.log(`获取完成任务的数组`);
             TaskListArr = result.result.taskUserEvaluationVOList
             console.log(`📝 任务列表`)
             TaskListArr.forEach((item)=>{
-              if(item.receivedRedId!==undefined){
+              if(!item.receivedRedId){
                 TopicIdArr.push(item.receivedRedId)
               }
               console.log(`ID:【${item.id}】,任务【${item.taskName}】,任务奖励:【${item.rewardScore}】积分`)
             })
             console.log(`当前领取TopicId数组为：${TopicIdArr}`)
-          }else{
-            console.log(`❌ 初始化失败！`)
-          }
-        }}catch(e) {
-          console.log(e)
-        } finally {
-          resolve();
-        } 
-      })
-    })
+        }else{
+            console.log(`任务完成后的信息：`);
+            $.message+=`🧧 当前红包:${result.result.userRedAmout}\n`
+            console.log(`🧧 当前红包:${result.result.userRedAmout}`)
+            $.message+=`🎈 当前积分:${result.result.userScore}\n`
+            console.log(`🎈 当前积分:${result.result.userScore}`)
+        }
+    }
 }
 
-// 🧧领取奖励
-async function Award(topicId) {
-  return new Promise((resolve) => {
-    let body = `{"uid":${uid},"channelNumber":2,"topicId":${topicId}}`
-    $.post(BodytaskUrl(`task/recevieRedBag`,body),async(error, response, data) =>{
-     try{
-       if (error) {
-         console.log(`${JSON.stringify(error)}`)
-         console.log(`API请求失败，请检查网路重试`)
-       } else {
-         const result = JSON.parse(data)
-         // 反馈信息
-         // console.log(result) 
-        if(result.code == 200){
-          console.log(`${result.message}`)
-          $.message+=`\n领取奖励💰\n${result.message}\n`
-        } else {
-          console.log(data)
-        }
-       }}catch(e) {
-           console.log(e)
-         } finally {
-         resolve();
-       } 
-     })
-    })
+// 签到
+async function daily_sign(topicId) {
+    // 调用任务列表API
+    await daily_sign_API(topicId)
+    // console.log(result);
+    if(result.result.integralNum!==1){
+        console.log(`❌ 签到失败||重复签到`)
+    }else{
+        console.log(`✅ 签到成功！`)
+        $.message+=`✅ 签到成功！\n`
+    }
+}
+
+// 听力&阅读
+async function training(type) {
+    // 听力&阅读 API
+    await training_API(type)
+    console.log(`${result.result.msg}`)
+    console.log(`等待了5s···`)
+    await $.wait(5000)
+}
+
+// 领取奖励
+async function award(topicId){
+    console.log(`当前领取的TopicId为:${topicId}`)
+    // 领取奖励API
+    await award_API(topicId)
+    if(result.code == 200){
+        console.log(`${result.message}`)
+        $.message+=`\n领取奖励💰\n${result.message}\n`
+    } else {
+        console.log(data)
+    }
+    console.log(`等待了5s···`)
+    await $.wait(5000)
 }
 
 // 发送通知
@@ -279,21 +169,68 @@ async function sendMsg() {
   await notify.sendNotify(`朗果英语`,`${$.message}`);
 }
 
+// ==================API==================
+// 获取任务列表API
+async function task_list_API() {
+    let body = `{"uid":${uid},"channelNumber":2}`
+    await postRequest(`task/daily/taskList`,body)
+}
+
+// 日常签到API
+async function daily_sign_API() {
+    let body = `{"uid":${uid},"channelNumber":2}`
+    await postRequest(`sign/day/sinIn`,body)
+}
+
+// 听力&阅读 API
+async function training_API(type) {
+    let body = `{"uid":${uid},"channelNumber":2,"topicId":${Math.ceil(Math.random()*50000)},"type":${type}}`
+    await postRequest(`training/addUserScore`,body)
+}
+
+// 领取奖励API
+async function award_API(topicId){
+    let body = `{"uid":${uid},"channelNumber":2,"topicId":${topicId}}`
+    await postRequest(`task/recevieRedBag`,body)
+}
+
+
+// ==================请求==================
+function postRequest(url,body={},timeout = 1000){
+    return new Promise(resolve => {
+      setTimeout(() => {
+        $.post(BodytaskUrl(url,body), (err, resp, data) => {
+          try {
+            if (err) {
+              console.log('\nAPI查询请求失败 ‼️‼️')
+              console.log(JSON.stringify(err));
+              console.log(`url:${url}`)
+            } else {
+              result = JSON.parse(data);
+            }} catch (e) {
+              console.log(e)
+          } finally {
+            resolve(data);
+          }
+        })
+      }, timeout)
+    })
+  } 
  // BODYURL
  function BodytaskUrl(activity, body={}) {
   return {
     url: `${LANGOO_API_HOST}/${activity}`,
     body: body,
     headers: {
-      "Accept": "*/*",
-      "Accept-Encoding": "gzip, deflate",
-      "Accept-Language": "zh-Hans-CN;q=1",
-      "Connection": "keep-alive",
-      "Content-Type": "application/json",
-      'Host': 'api.langooo.com',
-      'token': token,
-      'versionName': '3.8.1',
-      'User-Agent': 'Langooo/3.8.1 (iPhone; iOS 14.3; Scale/3.00)'
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-Hans-CN;q=1",
+        "Connection": "keep-alive",
+        "Content-Type": "application/json",
+        'Host': 'api.langooo.com',
+        'token': token,
+        'versionName': '3.8.1',
+        'User-Agent': 'Langooo/3.8.1 (iPhone; iOS 14.3; Scale/3.00)'
     }
   }
 }
