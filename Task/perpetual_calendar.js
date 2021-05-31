@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 11:19:20
+ * @Last Modified time: 2021-05-31 11:20:07
  */
 
 const $ = Env('万年历')
@@ -86,7 +86,7 @@ if ($.isNode()) {
 async function invite_new(){
   // 邀请好友API
   await invite_new_API();
-  console.log(result)
+//   console.log(result)
   if(result.status!==200){
     console.log(`❌ ${result.msg}`)
   }else{
