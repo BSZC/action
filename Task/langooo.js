@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-04-06 17:21:16 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 16:43:07
+ * @Last Modified time: 2021-06-01 19:29:32
  */
 
 const $ = Env('朗果英语')
@@ -75,7 +75,7 @@ if ($.isNode()) {
     await task_list()
     
     console.log(`\n🧧执行 -> 领取奖励`)
-    for(let i = 0 ; i < 3; i++){
+    for(let i = 0 ; i < TopicIdArr.length; i++){
       topicId = TopicIdArr[i]
       await $.wait(1000)
       await award(topicId)
@@ -111,7 +111,7 @@ async function task_list(){
             TaskListArr = result.result.taskUserEvaluationVOList
             console.log(`📝 任务列表`)
             TaskListArr.forEach((item)=>{
-              if(!item.receivedRedId){
+              if(item.receivedRedId!==undefined){
                 TopicIdArr.push(item.receivedRedId)
               }
               console.log(`ID:【${item.id}】,任务【${item.taskName}】,任务奖励:【${item.rewardScore}】积分`)
