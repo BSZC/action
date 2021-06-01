@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-01 11:43:06
+ * @Last Modified time: 2021-06-01 20:09:37
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -64,10 +64,14 @@ if ($.isNode()) {
       console.log(`\n开始第${i+1}次循环，去完成任务···`);
       for (let i = 0; i < missionArr.length; i++){
         mission = missionArr[i]
-        console.log(`当前执行任务:[${mission}]`);
+        console.log(`\n当前执行任务:[${mission}]`);
         await finish_task(mission)
-        await $.wait(10000) // 避免 重复操作 10s
+        if(result.data.coin){
+            console.log(`等待了10s···`);
+            await $.wait(10000) // 避免 重复操作 10s
+        }
       }
+      console.log(`等待了60s···`);
       await $.wait(60000) // 避免 重复操作 1分钟后继续操作
     }
     
