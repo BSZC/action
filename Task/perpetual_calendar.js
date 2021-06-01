@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-31 13:29:56
+ * @Last Modified time: 2021-06-01 11:43:06
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -51,20 +51,20 @@ if ($.isNode()) {
     await invite_new()
 
     // 任务列表
-    console.log(`执行 -> 任务列表`);
+    console.log(`\n执行 -> 任务列表`);
     await task_list()
 
     // 红包签到
-    console.log(`执行 -> 红包签到`);
+    console.log(`\n执行 -> 红包签到`);
     await hb_sign()
 
     // 完成任务
-    console.log(`执行 -> 完成任务`)
+    console.log(`\n执行 -> 完成任务`)
     for (let i = 0; i <10; i++){
-      console.log(`开始第${i+1}次循环，去完成任务···`);
+      console.log(`\n开始第${i+1}次循环，去完成任务···`);
       for (let i = 0; i < missionArr.length; i++){
         mission = missionArr[i]
-        console.log(`当前执行任务:${mission}`);
+        console.log(`当前执行任务:[${mission}]`);
         await finish_task(mission)
         await $.wait(10000) // 避免 重复操作 10s
       }
@@ -73,7 +73,7 @@ if ($.isNode()) {
     
 
     // 推送消息
-    console.log(`执行 -> 推送消息`);
+    console.log(`\n执行 -> 推送消息`);
     await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
@@ -134,7 +134,7 @@ async function task_list(){
     }
   })
   if(missionArr.length!==0){
-    console.log(`已获取所有的任务`);
+    console.log(`✅已获取所有的任务`);
   }
 }
 
@@ -203,7 +203,7 @@ function postRequest(function_id, timeout = 1000){
       $.post(taskUrl(function_id), (err, resp, data) => {
         try {
           if (err) {
-            console.log('\nAPI查询请求失败 ‼️‼️')
+            console.log('API查询请求失败 ‼️‼️')
             console.log(JSON.stringify(err));
             console.log(`function_id:${function_id}`)
           } else {
