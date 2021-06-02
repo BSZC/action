@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-04-06 17:21:16 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-01 19:29:32
+ * @Last Modified time: 2021-06-02 23:45:38
  */
 
 const $ = Env('朗果英语')
@@ -84,7 +84,9 @@ if ($.isNode()) {
     $.Num++
 
     // 📧推送消息
-    await sendMsg()
+    if(TopicIdArr.length!==0){
+      await sendMsg()
+    }
 
     console.log(`········【帐号${i+1}】结束········`)
   }
