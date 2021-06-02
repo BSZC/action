@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-02 16:43:19
+ * @Last Modified time: 2021-06-02 16:55:12
  */
 
 const $ = Env('京东到家-免费水果')
@@ -32,7 +32,7 @@ if ($.isNode()) {
   }
   Object.keys(signcookie).forEach((item) => {
     if (signcookie[item]) {
-      Cookie.push(signcookie[item])
+      CookiesArr.push(signcookie[item])
     }
   })
 }
