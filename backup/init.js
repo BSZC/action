@@ -80,15 +80,15 @@ async function xxx_XXX_API() {
 
 // 正常请求 增加代码的复用率
 // RequestBody
-function postRequest(function_id, timeout = 1000){
+function postRequest(ApiUrl, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.post(taskUrl(function_id), (err, resp, data) => {
+      $.post(taskUrl(ApiUrl), (err, resp, data) => {
         try {
           if (err) {
             console.log('\nAPI查询请求失败 ‼️‼️')
             console.log(JSON.stringify(err));
-            console.log(`function_id:${function_id}`)
+            console.log(`ApiUrl:${ApiUrl}`)
           } else {
             result = JSON.parse(data);
           }} catch (e) {
@@ -103,9 +103,9 @@ function postRequest(function_id, timeout = 1000){
 
 
 // URL
-function taskUrl(activity) {
+function taskUrl(ApiUrl) {
   return {
-    url: `${XXXX_API_HOST}/${activity}`,
+    url: `${XXXX_API_HOST}/${ApiUrl}`,
     headers: {
       'Host': '',
       'User-Agent': '',
@@ -115,15 +115,15 @@ function taskUrl(activity) {
 
 // 带Body的请求 增加代码的复用率
 // RequestBody
-function postRequestBody(function_id, body = {}, timeout = 1000){
+function postRequestBody(ApiUrl, body = {}, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.post(BodytaskUrl(function_id, body), (err, resp, data) => {
+      $.post(BodytaskUrl(ApiUrl, body), (err, resp, data) => {
         try {
           if (err) {
             console.log('\nAPI查询请求失败 ‼️‼️')
             console.log(JSON.stringify(err));
-            console.log(`function_id:${function_id}`)
+            console.log(`ApiUrl:${ApiUrl}`)
           } else {
             result = JSON.parse(data);
           }} catch (e) {
@@ -137,9 +137,9 @@ function postRequestBody(function_id, body = {}, timeout = 1000){
 } 
 
  // BODYURL
- function BodytaskUrl(activity, body={}) {
+ function BodytaskUrl(ApiUrl, body={}) {
   return {
-    url: `${XXXX_API_HOST}/${activity}`,
+    url: `${XXXX_API_HOST}/${ApiUrl}`,
     body: body,
     headers: {
       'Host': '',
