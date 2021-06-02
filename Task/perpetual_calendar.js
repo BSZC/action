@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-01 20:28:10
+ * @Last Modified time: 2021-06-02 09:41:21
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -19,7 +19,7 @@ $.message = ''
 const notify = $.isNode() ? require('./sendNotify') : '';
 
 // 任务集合
-const missionArr = [`HuDongGuangGao01_tuia`]
+const missionArr = []
 
 $.total = 0
 
