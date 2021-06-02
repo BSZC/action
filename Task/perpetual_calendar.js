@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-02 09:41:21
+ * @Last Modified time: 2021-06-02 11:16:57
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -20,6 +20,8 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 
 // 任务集合
 const missionArr = []
+
+$.success = true
 
 $.total = 0
 
@@ -70,9 +72,17 @@ if ($.isNode()) {
             console.log(`等待了10s···`);
             await $.wait(10000) // 避免 重复操作 10s
         }
+        if(!$.success){
+            $.message+='\n❗未完成任务\n❗设置的Token过期或者设置错误，请检查后再填入Secret内'
+            break;
+        }
       }
-      console.log(`等待了60s···`);
-      await $.wait(60000) // 避免 重复操作 1分钟后继续操作
+      if($.success){
+        console.log(`等待了60s···`);
+        await $.wait(60000) // 避免 重复操作 1分钟后继续操作
+      }else{
+        break;
+      }
     }
     
 
@@ -130,11 +140,15 @@ async function task_list(){
     }
     else{
         let info = []
-        item.hongbaos.forEach((item)=>{
+        if(item.hongbaos!==undefined){
+          item.hongbaos.forEach((item)=>{
             info.push(`${item/100}元`)
         })
         $.message+=`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`
         console.log(`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`);
+        }else{
+          console.log(`❌ 获取红包失败`);
+        }
     }
   })
   if(missionArr.length!==0){
@@ -170,67 +184,56 @@ async function finish_task(mission){
         }
       }else{
         console.log(`${result.data.msg}`);
+        if(result.data.msg==='无效的用户'){
+          $.success = false
+        }
       }
+      return
     }
+    return
 }
 
 // 推送消息
 async function sendMsg() {
+  console.log($.message);
   await notify.sendNotify(`万年历`,`本次脚本运行获得金币💰:${$.total}个`);
 }
 
 // ==================API==================
 // 邀请好友API
 async function invite_new_API(){
-await getRequest(`api/Coin_Activity/Complete?&code=Inviter_code&otherinfo=3odb62&${url}`)
+  $.type = $.get
+  await Request(`api/Coin_Activity/Complete?&code=Inviter_code&otherinfo=3odb62&${url}`)
 }
 
 // 获取任务列表API
 async function task_list_API() {
-  await getRequest(`api/Coin_Activity/GetMissions?${url}`)
+  $.type = $.get
+  await Request(`api/Coin_Activity/GetMissions?${url}`)
 }
 
 // 红包签到API
 async function hb_sign_API() {
-  await postRequest(`api/Coin_Activity/CompleteHongBao?${url}`)
+  $.type = $.post
+  await Request(`api/Coin_Activity/CompleteHongBao?${url}`)
 }
 
 // 完成任务API
 async function finish_task_API(mission){
-  await getRequest(`api/Coin_Activity/Complete?${url}&code=${mission}`)
+  $.type = $.get
+  await Request(`api/Coin_Activity/Complete?${url}&code=${mission}`)
 }
 
 // ==================API请求==================
-function postRequest(function_id, timeout = 1000){
+function Request(ApiUrl, timeout = 1000){
   return new Promise(resolve => {
     setTimeout(() => {
-      $.post(taskUrl(function_id), (err, resp, data) => {
+      $.type(taskUrl(ApiUrl), (err, resp, data) => {
         try {
           if (err) {
             console.log('API查询请求失败 ‼️‼️')
             console.log(JSON.stringify(err));
-            console.log(`function_id:${function_id}`)
-          } else {
-            result = JSON.parse(data);
-          }} catch (e) {
-            console.log(e)
-        } finally {
-          resolve(data);
-        }
-      })
-    }, timeout)
-  })
-} 
-
-function getRequest(function_id, body = {}, timeout = 1000){
-  return new Promise(resolve => {
-    setTimeout(() => {
-      $.get(taskUrl(function_id, body), (err, resp, data) => {
-        try {
-          if (err) {
-            console.log('\nAPI查询请求失败 ‼️‼️')
-            console.log(JSON.stringify(err));
-            console.log(`function_id:${function_id}`)
+            console.log(`ApiUrl:${ApiUrl}`)
           } else {
             result = JSON.parse(data);
           }} catch (e) {
@@ -244,9 +247,9 @@ function getRequest(function_id, body = {}, timeout = 1000){
 } 
 
 // URL
-function taskUrl(activity) {
+function taskUrl(ApiUrl) {
   return {
-    url: `${WNL_API_HOST}/${activity}`,
+    url: `${WNL_API_HOST}/${ApiUrl}`,
     headers: {
       'Host': 'r.51wnl-cq.com',
       'User-Agent': 'Calendar_New_UI/5.3.1 (iPhone; iOS 14.3; Scale/3.00)',
