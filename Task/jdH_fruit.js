@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-02 23:48:05
+ * @Last Modified time: 2021-06-02 23:55:14
  */
 
 const $ = Env('京东到家-免费水果')
@@ -23,6 +23,9 @@ $.redPacketTime = 10
 $.finish = false
 
 $.message = ''
+
+// 水滴红包总量
+$.total = 0
 
 if ($.isNode()) {
   if (process.env.JDGH_XDZY_COOKIE && process.env.JDGH_XDZY_COOKIE.indexOf('#') > -1) {
@@ -111,7 +114,7 @@ async function initFruit() {
     if(initFruitInfo.stageName==='成熟'){
       $.finish = true
       // 当为成熟阶段的时候 每天推送消息
-      $.message+=`当前种植：【${initFruitInfo.fruitName}】\n当前阶段:【${initFruitInfo.stageName}】\n还差【${initFruitInfo.curStageLeftProcess}%】可收获水果\n`
+      $.message+=`当前种植：【${initFruitInfo.fruitName}】\n当前阶段:【${initFruitInfo.stageName}】\n还差【${initFruitInfo.curStageLeftProcess}%】可收获水果`
     }
   }
 }
@@ -241,7 +244,7 @@ async function getRedPacketAward(){
     console.log(`❌ ${result.msg}`);
   }else{
     let redPacketInfo = result.result
-    $.message+=`领取水滴红包${result.msg},获得水滴【${redPacketInfo.reward}g】💧，再有[${redPacketInfo.restProgress}%]可领取水滴红包`
+    $.total+=redPacketInfo.reward
     console.log(`领取水滴红包${result.msg},获得水滴【${redPacketInfo.reward}g】💧，再有[${redPacketInfo.restProgress}%]可领取水滴红包`);
   }
   
@@ -249,7 +252,7 @@ async function getRedPacketAward(){
 
 // 🗨发送信息
 async function sendMsg() {
-  await notify.sendNotify(`京东到家 - 免费水果`,`${$.message}`);
+  await notify.sendNotify(`京东到家 - 免费水果`,`${$.message}\n总共获得水滴红包[${$.total}]g💧`);
 }
 
 // ==================API==================
