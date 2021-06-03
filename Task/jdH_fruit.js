@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-03-22 15:19:50 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-02 23:55:14
+ * @Last Modified time: 2021-06-03 11:50:45
  */
 
 const $ = Env('京东到家-免费水果')
@@ -252,7 +252,7 @@ async function getRedPacketAward(){
 
 // 🗨发送信息
 async function sendMsg() {
-  await notify.sendNotify(`京东到家 - 免费水果`,`${$.message}\n总共获得水滴红包[${$.total}]g💧`);
+  await notify.sendNotify(`京东到家 - 免费水果`,`${$.message}\n\n本次获得水滴红包[${$.total}]g💧`);
 }
 
 // ==================API==================
