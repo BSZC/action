@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-27 13:36:57 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-30 23:41:11
+ * @Last Modified time: 2021-06-03 11:51:32
  */
 
 const $ = Env('考拉海购')
@@ -26,6 +26,10 @@ const circleJobTime = []
 
 // 总共获得考拉豆🥔
 $.total = 0
+
+const YY = new Date().getFullYear()
+const MM = new Date().getMonth()+1
+const DD = new Date().getDate()
 
 if ($.isNode()) {
   if (process.env.KAOLA_COOKIE && process.env.KAOLA_COOKIE.indexOf('#') > -1) {
@@ -162,15 +166,15 @@ async function expire_beans(){
   if(result.code!==0){
     console.log(`❌ ${result.msg}`);
   }else{
-    $.message+=`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个考拉豆🥔\n${result.body[0].desc}`
-    console.log(`当前时间：${new Date().toLocaleDateString()}\n${result.body[0].point}个考拉豆🥔\n${result.body[0].desc}`);
+    $.message+=`当前时间：${YY}-${MM}-${DD}\n${result.body[0].point}个考拉豆🥔${result.body[0].desc}`
+    console.log(`当前时间：${YY}-${MM}-${DD}\n${result.body[0].point}个考拉豆🥔${result.body[0].desc}`);
   }
 }
 
 
 // 推送消息
 async function sendMsg() {
-  await notify.sendNotify(`考拉海购`,`本次获得[${$.total}]个考拉豆🥔\n${$.message}`);
+  await notify.sendNotify(`考拉海购`,`本次获得[${$.total}]个考拉豆🥔\n\n${$.message}`);
 }
 
 // ==================API==================
