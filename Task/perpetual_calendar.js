@@ -2,10 +2,11 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-02 11:16:57
+ * @Last Modified time: 2021-06-04 18:07:15
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
+ * 20000金币=1元
  */
 
 const $ = Env('万年历')
@@ -24,6 +25,12 @@ const missionArr = []
 $.success = true
 
 $.total = 0
+
+// 默认提现
+$.cash = 10
+
+$.week = new Date().getDay()
+$.hours = new Date().getHours()
 
 if ($.isNode()) {
   if (process.env.WNL_TOKEN && process.env.WNL_TOKEN.indexOf('#') > -1) {
@@ -48,8 +55,14 @@ if ($.isNode()) {
 
     console.log(`········【帐号${i+1}】开始········`)
 
+    $.num = 0
+
+    // 初始化个人信息
+    console.log(`执行 -> 初始化个人信息`);
+    await init_info()
+
     // 邀请好友
-    console.log(`执行 -> 邀请好友`);
+    console.log(`\n执行 -> 邀请好友`);
     await invite_new()
 
     // 任务列表
@@ -84,10 +97,24 @@ if ($.isNode()) {
         break;
       }
     }
+
+    // 金币兑换红包
+    console.log(`\n执行 -> 金币兑换红包`);
+    await exchange_gold_to_money()
+
+    // 零钱提现
+    if($.week===5&&$.hours>12&&$.hours<24){
+      console.log(`\n执行 -> 零钱提现`);
+      await withdraw()
+    }else{
+      console.log(`不够7天，禁止提现`);
+    }
     
+    $.num++
 
     // 推送消息
     console.log(`\n执行 -> 推送消息`);
+    await init_info()
     await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
@@ -99,6 +126,33 @@ if ($.isNode()) {
 
 
 // ==================功能模块==================
+// 初始化个人信息
+async function init_info(){
+  // 初始化个人信息API
+  await init_info_API();
+  // console.log(result);
+  if(result.status!==200){
+    console.log(`❌ ${result.msg}`);
+  }else{
+    let info  = result.data
+    // 个人信息
+    // console.log(info);
+    // 当前用户可兑换金币数量
+    $.initCoin =info.coin
+    // 当前用户可提前零钱数量
+    $.initMoney =(info.cash)/100
+    // 初始化的时候只打印 不推送通知
+    if($.num===0){
+      console.log(`当前登录用户ID:[${info.userId}]\n最后一次签到时间:${info.lastSign},已经连续签到[${info.signContinued}]天\n总金币为:[${info.coin}]💰 总零钱为:${info.cash/100}元🧧`);
+    }else{
+      // 推送通知
+      $.message+=`\n\n当前登录用户ID:[${info.userId}]\n最后一次签到时间:${info.lastSign},已经连续签到[${info.signContinued}]天\n\n本日获得金币:[${info.todayCoin}]💰 ≈ 红包[${info.todayCoin/20000}]元\n当前用户总金币为:[${info.coin}]💰 总零钱为:${info.cash/100}`
+      console.log(`当前登录用户ID:[${info.userId}]\n最后一次签到时间:${info.lastSign},已经连续签到[${info.signContinued}]天\n\n本日获得金币:[${info.todayCoin}]💰 ≈ 红包[${info.todayCoin/20000}]元\n当前用户总金币为:[${info.coin}]💰 总零钱为:${info.cash/100}元`);
+    }
+
+  }
+}
+
 // 邀请好友
 async function invite_new(){
   // 邀请好友API
@@ -193,13 +247,59 @@ async function finish_task(mission){
     return
 }
 
+// 金币兑换红包
+async function exchange_gold_to_money(){
+
+  // 金币兑换红包的最大值
+  $.ExChangeCoin = $.initCoin - ($.initCoin%200)
+
+  if($.ExChangeCoin>200){
+    // 获得红包的数量
+    $.ExChangeMoney = `本次脚本运行兑换红包🧧${($.initCoin - ($.initCoin%200))/20000}元`
+    console.log(`【去兑换】\n当前可以兑换金币的最大数为：${$.initCoin - ($.initCoin%200)}个 ≈ 红包${($.initCoin - ($.initCoin%200))/20000}元`);
+    // 金币兑换红包API
+    await exchange_gold_to_money_API();
+    // console.log(result);
+    if(result.status!==200){
+      console.log(`❌ ${result.msg}`);
+    }else{
+      console.log(`${result.data===true?"兑换成功!获得红包["+$.ExChangeMoney+"]元":result.msg}`);
+    }
+  }else{
+    console.log(`当前金币${$.initCoin}个，不执行换零钱操作`);
+  }
+
+}
+
+// 提现
+async function withdraw(){
+  if($.initMoney<$.cash){
+    console.log(`当前零钱为:${$.initMoney},不够${$.cash}元提现标准`);
+  }else{
+    // 提现API
+    await withdraw_API();
+    // console.log(result);
+    if(result.errorCode!==200){
+      console.log(`❌ ${result.msg}`);
+    }else{
+      $.withdraw = `提现${result.msg},${result.speedModel.msg}`
+      console.log(`提现${result.msg},${result.speedModel.msg}`);
+    }
+  }
+}
+
 // 推送消息
 async function sendMsg() {
   console.log($.message);
-  await notify.sendNotify(`万年历`,`本次脚本运行获得金币💰:${$.total}个`);
+  await notify.sendNotify(`万年历`,`本次脚本运行获得金币💰:${$.total}个,\n${$.ExChangeMoney?"":$.ExChangeMoney}\n${$.withdraw}`);
 }
 
 // ==================API==================
+// 初始化个人信息
+async function init_info_API(){
+  $.type = $.get
+  await Request(`Api/User/GetExtInfo?${url}`)
+}
 // 邀请好友API
 async function invite_new_API(){
   $.type = $.get
@@ -222,6 +322,18 @@ async function hb_sign_API() {
 async function finish_task_API(mission){
   $.type = $.get
   await Request(`api/Coin_Activity/Complete?${url}&code=${mission}`)
+}
+
+// 金币💰兑换零钱红包🧧API
+async function exchange_gold_to_money_API(){
+  $.type = $.get
+  await Request(`api/MemberExchangeConfig/CoinExChangeCash?${url}&ExChangeCoin=${$.ExChangeCoin}`)
+}
+
+// 提现API
+async function withdraw_API(){
+  $.type = $.get
+  await Request(`Api/User/WithDraw?${url}&cash=${$.cash}&cashcode=2`)
 }
 
 // ==================API请求==================
