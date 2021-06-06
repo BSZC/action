@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-04-06 15:16:33 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-05-05 13:37:29
+ * @Last Modified time: 2021-06-06 10:29:43
  * 
  * 每月5日进行统计
  */
@@ -11,17 +11,17 @@ const $ = Env('electric charge')
 
 !(async () => {
   // 南 上个月度数
-  const PreSouth = 19561
+  const PreSouth = 19687
   // 南 本月度数
   const NowSouth = 0
   
   // 北 上个月度数
-  const PreNorth = 9854
+  const PreNorth = 10104
   // 北 本月度数
   const NowNorth = 0
   
   // 支付宝缴费 
-  $.Money = 
+  $.Money = 0
 
   // 总消耗度数
   $.totalNum = (NowSouth-PreSouth)+(NowNorth-PreNorth)
