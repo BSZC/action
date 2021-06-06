@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-04 18:07:15
+ * @Last Modified time: 2021-06-06 11:32:33
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -23,6 +23,8 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 const missionArr = []
 
 $.success = true
+
+$.redPacket = true
 
 $.total = 0
 
@@ -70,8 +72,12 @@ if ($.isNode()) {
     await task_list()
 
     // 红包签到
-    console.log(`\n执行 -> 红包签到`);
-    await hb_sign()
+    if($.redPacket){
+      console.log(`\n执行 -> 红包签到`);
+      await hb_sign()
+    }else{
+      console.log(`跳过红包签到`);
+    }
 
     // 完成任务
     console.log(`\n执行 -> 完成任务`)
@@ -157,7 +163,7 @@ async function init_info(){
 async function invite_new(){
   // 邀请好友API
   await invite_new_API();
-//   console.log(result)
+  // console.log(result)
   if(result.status!==200){
     console.log(`❌ ${result.msg}`)
   }else{
@@ -198,8 +204,9 @@ async function task_list(){
           item.hongbaos.forEach((item)=>{
             info.push(`${item/100}元`)
         })
-        $.message+=`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`
-        console.log(`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`);
+        if(info.length===3) $.redPacket = false
+        $.message+=`${info.length===3?`历史获得红包${info},已经获得所有红包!`:`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`}`
+        console.log(`${info.length===3?`历史获得红包${info},已经获得所有红包!`:`历史获得红包：${info}，总计获得${item.count}个红包，今日${item.isGetHongBaoToday===1?"已经":"未"}获得红包`}`);
         }else{
           console.log(`❌ 获取红包失败`);
         }
