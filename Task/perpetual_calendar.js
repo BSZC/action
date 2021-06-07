@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-06 11:32:33
+ * @Last Modified time: 2021-06-07 13:25:58
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -30,9 +30,6 @@ $.total = 0
 
 // 默认提现
 $.cash = 10
-
-$.week = new Date().getDay()
-$.hours = new Date().getHours()
 
 if ($.isNode()) {
   if (process.env.WNL_TOKEN && process.env.WNL_TOKEN.indexOf('#') > -1) {
@@ -108,19 +105,15 @@ if ($.isNode()) {
     console.log(`\n执行 -> 金币兑换红包`);
     await exchange_gold_to_money()
 
-    // 零钱提现
-    if($.week===5&&$.hours>12&&$.hours<24){
-      console.log(`\n执行 -> 零钱提现`);
-      await withdraw()
-    }else{
-      console.log(`不够7天，禁止提现`);
-    }
+    // 提现记录 查看是否上一次提现完成
+    console.log(`\n 执行 -> 提现记录`);
+    await draw_log()
     
     $.num++
 
     // 推送消息
-    console.log(`\n执行 -> 推送消息`);
     await init_info()
+    console.log(`\n执行 -> 推送消息`);
     await sendMsg()
 
     console.log(`········【帐号${i+1}】结束········`)
@@ -278,6 +271,24 @@ async function exchange_gold_to_money(){
 
 }
 
+// 提现记录 查看是否上一次提现完成
+async function draw_log(){
+  // 提现记录API
+  await draw_log_API();
+  // console.log(result);
+  // 提现记录
+  let logArr = result.data
+  logArr.forEach(async(item)=>{
+    // status=3为不可提现，status=4为提现成功可进行下一次提现
+    if(item.status!==3){
+      console.log(`\n执行 -> 零钱提现`);
+      await withdraw()
+    }else{
+      console.log(`当前不能提现，还未完成提现任务或正在提现中···`);
+    }
+  })
+}
+
 // 提现
 async function withdraw(){
   if($.initMoney<$.cash){
@@ -297,8 +308,8 @@ async function withdraw(){
 
 // 推送消息
 async function sendMsg() {
-  console.log($.message);
-  await notify.sendNotify(`万年历`,`本次脚本运行获得金币💰:${$.total}个,\n${$.ExChangeMoney?"":$.ExChangeMoney}\n${$.withdraw}`);
+  console.log(`本次脚本运行获得金币💰:${$.total}个\n${$.ExChangeMoney?"":$.ExChangeMoney}\n${$.withdraw}`);
+  await notify.sendNotify(`万年历`,`本次脚本运行获得金币💰:${$.total}个\n${$.ExChangeMoney?"":$.ExChangeMoney}\n${$.withdraw}`);
 }
 
 // ==================API==================
@@ -335,6 +346,12 @@ async function finish_task_API(mission){
 async function exchange_gold_to_money_API(){
   $.type = $.get
   await Request(`api/MemberExchangeConfig/CoinExChangeCash?${url}&ExChangeCoin=${$.ExChangeCoin}`)
+}
+
+// 提现记录API
+async function draw_log_API(){
+  $.type = $.get
+  await Request(`Api/user/DrawLog?${url}&pageindex=1&pagesize=100`)
 }
 
 // 提现API
