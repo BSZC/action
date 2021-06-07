@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-07 13:25:58
+ * @Last Modified time: 2021-06-07 13:51:46
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -106,7 +106,6 @@ if ($.isNode()) {
     await exchange_gold_to_money()
 
     // 提现记录 查看是否上一次提现完成
-    console.log(`\n 执行 -> 提现记录`);
     await draw_log()
     
     $.num++
@@ -298,10 +297,10 @@ async function withdraw(){
     await withdraw_API();
     // console.log(result);
     if(result.errorCode!==200){
-      console.log(`❌ ${result.msg}`);
+      console.log(`❌ 提现失败`);
     }else{
-      $.withdraw = `提现${result.msg},${result.speedModel.msg}`
-      console.log(`提现${result.msg},${result.speedModel.msg}`);
+      $.withdraw = `提现￥[${$.cash}]成功,需要等待手动加速或自动7天后自动完成`
+      console.log(`提现￥[${$.cash}]成功,需要等待手动加速或自动7天后自动完成`);
     }
   }
 }
