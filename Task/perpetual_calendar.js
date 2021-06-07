@@ -2,7 +2,7 @@
  * @Author: Xin https://github.com/Xin-code 
  * @Date: 2021-05-30 20:55:07 
  * @Last Modified by: Xin 
- * @Last Modified time: 2021-06-07 13:51:46
+ * @Last Modified time: 2021-06-07 15:39:11
  * 
  * IOS端 AppStore 搜索[万年历]
  * 🔗下载链接:https://mobile.wnlpromain.com:12443/score483/sharedetails2.html?code=3odb62
@@ -277,15 +277,18 @@ async function draw_log(){
   // console.log(result);
   // 提现记录
   let logArr = result.data
+  let canCashArr = []
   logArr.forEach(async(item)=>{
-    // status=3为不可提现，status=4为提现成功可进行下一次提现
-    if(item.status!==3){
-      console.log(`\n执行 -> 零钱提现`);
-      await withdraw()
-    }else{
-      console.log(`当前不能提现，还未完成提现任务或正在提现中···`);
-    }
+    canCashArr.push(item.status)
   })
+  // console.log(canCashArr);
+  // status=0,1,2,3为不可提现，status=4为提现成功可进行下一次提现
+  if(canCashArr[0]===4){
+    console.log(`\n执行 -> 零钱提现`);
+    // await withdraw()
+  }else{
+    console.log(`当前不能提现，还未完成提现任务或正在提现中···`);
+  }
 }
 
 // 提现
